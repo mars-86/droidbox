@@ -1,0 +1,6 @@
+#ifndef __PICTURE_TRANSFER_PROTOCOL_ERROR_INCLUDED_H__
+#define __PICTURE_TRANSFER_PROTOCOL_ERROR_INCLUDED_H__
+
+const char* ptp_get_error(short ecode);
+
+#endif // __PICTURE_TRANSFER_PROTOCOL_ERROR_INCLUDED_H__
