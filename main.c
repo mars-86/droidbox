@@ -18,9 +18,7 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define MAX_SIZE 512
-#define BULK_BUFF_SIZE 64
-#define DEVICE "018"
+#define DEVICE "019"
 
 int main(int argc, char* argv[])
 {

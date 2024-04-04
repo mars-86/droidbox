@@ -293,3 +293,23 @@ ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, u
 
     return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
 }
+
+ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len)
+{
+    int nparams = 2;
+    struct ptp_container __ptpreq = { 0 };
+
+    __ptpreq.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpreq.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpreq.header.Code = PTP_REQUEST_DELETE_OBJECT;
+    __ptpreq.header.TransacionID = __get_transaction_id();
+
+    __ptpreq.payload.Parameter1 = object_handle;
+    __ptpreq.payload.Parameter2 = object_format_code;
+
+#ifdef __DEBUG
+    printf("GET DELETE OBJECT\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+}
