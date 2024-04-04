@@ -313,3 +313,23 @@ ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t obj
 
     return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
 }
+
+ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_params_t* rparams)
+{
+    int nparams = 2;
+    struct ptp_container __ptpreq = { 0 };
+
+    __ptpreq.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpreq.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpreq.header.Code = PTP_REQUEST_SEND_OBJECT_INFO;
+    __ptpreq.header.TransacionID = __get_transaction_id();
+
+    __ptpreq.payload.Parameter1 = storage_id;
+    __ptpreq.payload.Parameter2 = object_handle;
+
+#ifdef __DEBUG
+    printf("SEND OBJECT INFO\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, rparams);
+}
