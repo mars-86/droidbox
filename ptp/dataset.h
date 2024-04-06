@@ -23,31 +23,6 @@ struct device_info {
     char* SerialNumber;
 } __attribute__((packed));
 
-#define PTP_OBJECT_PROTECTION_NO_PROTECTION 0x0000
-#define PTP_OBJECT_PROTECTION_READ_ONLY 0x0001
-
-struct object_info {
-    uint32_t StorageID;
-    uint16_t ObjectFormat;
-    uint16_t ProtectionStatus;
-    uint32_t ObjectCompressedSize;
-    uint16_t ThumbFormat;
-    uint32_t ThumbCompressedSize;
-    uint32_t ThumbPixWidth;
-    uint32_t ThumbPixHeight;
-    uint32_t ImagePixWidth;
-    uint32_t ImagePixHeight;
-    uint32_t ImageBitDepth;
-    uint32_t ParentObject;
-    uint16_t AssociationType;
-    uint32_t AssociationDesc;
-    uint32_t SequenceNumber;
-    char* Filename;
-    char* CaptureDate;
-    char* ModificationDate;
-    char* Keywords;
-} __attribute__((packed));
-
 #define PTP_STORAGE_TYPE_UNDEFINED 0x0000
 #define PTP_STORAGE_TYPE_FIXED_ROM 0x0001
 #define PTP_STORAGE_TYPE_REMOVABLE_ROM 0x0002

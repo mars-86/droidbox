@@ -1,6 +1,59 @@
 #ifndef __PICTURE_TRANSFER_PROTOCOL_OBJECT_INCLUDED_H__
 #define __PICTURE_TRANSFER_PROTOCOL_OBJECT_INCLUDED_H__
 
+#include <stdint.h>
+
+struct object_info {
+    uint32_t StorageID;
+    uint16_t ObjectFormat;
+    uint16_t ProtectionStatus;
+    uint32_t ObjectCompressedSize;
+    uint16_t ThumbFormat;
+    uint32_t ThumbCompressedSize;
+    uint32_t ThumbPixWidth;
+    uint32_t ThumbPixHeight;
+    uint32_t ImagePixWidth;
+    uint32_t ImagePixHeight;
+    uint32_t ImageBitDepth;
+    uint32_t ParentObject;
+    uint16_t AssociationType;
+    uint32_t AssociationDesc;
+    uint32_t SequenceNumber;
+    char* Filename;
+    char* CaptureDate;
+    char* ModificationDate;
+    char* Keywords;
+} __attribute__((packed));
+
+struct object_info2 {
+    uint32_t StorageID;
+    uint16_t ObjectFormat;
+    uint16_t ProtectionStatus;
+    uint32_t ObjectCompressedSize;
+    uint16_t ThumbFormat;
+    uint32_t ThumbCompressedSize;
+    uint32_t ThumbPixWidth;
+    uint32_t ThumbPixHeight;
+    uint32_t ImagePixWidth;
+    uint32_t ImagePixHeight;
+    uint32_t ImageBitDepth;
+    uint32_t ParentObject;
+    uint16_t AssociationType;
+    uint32_t AssociationDesc;
+    uint32_t SequenceNumber;
+    uint8_t flen;
+    uint16_t f;
+    uint8_t clen;
+    uint16_t c;
+    uint8_t mlen;
+    uint16_t m;
+    uint8_t klen;
+    uint16_t k;
+} __attribute__((packed));
+
+#define PTP_OBJECT_PROTECTION_NO_PROTECTION 0x0000
+#define PTP_OBJECT_PROTECTION_READ_ONLY 0x0001
+
 #define PTP_OBJECT_AGGREGATED_STORES 0xFFFFFFFF
 #define PTP_OBJECT_FORMAT_CODE_IMAGE 0xFFFFFFFF
 #define PTP_OBJECT_FORMAT_CODE_UNUSED 0x00000000
@@ -14,6 +67,8 @@
 
 #define PTP_OBJECT_DELETE_ALL_HANDLES 0xFFFFFFFF
 #define PTP_OBJECT_FORMAT_CODE_IMAGE_DELETE 0xFFFFFFFF
+#define PTP_OBJECT_NO_PARENT 0x00000000 // Object exists in root
+#define PTP_OBJECT_NO_SEQ_NUMBER 0x00000000
 
 #define PTP_OBJECT_FORMAT_UNDEFINED_NON_IMAGE 0x3000 // A Undefined Undefined non-image object
 #define PTP_OBJECT_FORMAT_ASSOCIATION 0x3001 // A Association Association (e.g. folder)
@@ -45,5 +100,9 @@
 #define PTP_OBJECT_FORMAT_TIFF_IT 0x380E // I TIFF/IT Tag Image File Format for Information Technology (graphic arts)
 #define PTP_OBJECT_FORMAT_JP2 0x380F // I JP2 JPEG2000 Baseline File Format
 #define PTP_OBJECT_FORMAT_JPX 0x3810 // I JPX JPEG2000 Extended File Format
+
+struct object_info* alloc_object_info(uint32_t filename_size, uint32_t capture_date_size, uint32_t modif_date_size, uint32_t keywords_size);
+
+void destroy_object_info(const struct object_info* obj_info);
 
 #endif // __PICTURE_TRANSFER_PROTOCOL_OBJECT_INCLUDED_H__
