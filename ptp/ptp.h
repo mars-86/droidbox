@@ -115,7 +115,7 @@ typedef struct ptp_res ptp_res_t;
  * OperationRequest dataset shall be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len);
+int ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * OpenSession
@@ -137,7 +137,7 @@ ptp_res_t ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len);
  * 0x00000000 for this operation.
  */
 
-ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id);
+int ptp_open_session(ptp_dev_t* dev, uint32_t session_id, ptp_res_t* res);
 
 /*
  * CloseSession
@@ -147,7 +147,7 @@ ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id);
  * Description: Closes the session. Causes device to perform any session-specific cleanup.
  */
 
-ptp_res_t ptp_close_session(ptp_dev_t* dev);
+int ptp_close_session(ptp_dev_t* dev, ptp_res_t* res);
 
 /*
  * GetStorageIDs
@@ -160,7 +160,7 @@ ptp_res_t ptp_close_session(ptp_dev_t* dev);
  * PhysicalStorageID and a LogicalStorageID with the value 0x0000.
  */
 
-ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len);
+int ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetStorageInfo
@@ -171,7 +171,7 @@ ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len);
  * parameter. This dataset is defined in Clause 5.5.3.
  */
 
-ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* data, uint32_t len);
+int ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetNumObjects
@@ -211,7 +211,7 @@ ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* dat
  * should be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, ptp_res_params_t* rparams);
+int ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, ptp_res_t* res, ptp_res_params_t* rparams);
 
 /*
  * GetObjectHandles
@@ -248,7 +248,7 @@ ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t obje
  * parameter), and the third parameter should be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetObjectInfo
@@ -265,7 +265,7 @@ ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t o
  * qualified by their ObjectInfo dataset.
  */
 
-ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetObject
@@ -282,7 +282,7 @@ ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* d
  * Incomplete_Transfer response should be used, along with the Store_Removed event.
  */
 
-ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetThumb
@@ -294,7 +294,7 @@ ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, 
  * ObjectHandle that is indicated in the first parameter.
  */
 
-ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * DeleteObject
@@ -327,7 +327,7 @@ ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, u
  * DeleteObject operations should be issued on each object or sub-association individually.
  */
 
-ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len);
+int ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * SendObjectInfo
@@ -403,7 +403,7 @@ ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t obj
  * response as the second operation parameter for a child’s SendObjectInfo operation.
  */
 
-ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, struct object_info* obj_info, uint32_t len, ptp_res_params_t* rparams);
+int ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, struct object_info* obj_info, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams);
 
 /*
  * SendObject
@@ -429,7 +429,7 @@ ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t obj
  * issued along with the StoreRemoved event.
  */
 
-ptp_res_t ptp_send_object(ptp_dev_t* dev, uint8_t* object, uint32_t len);
+int ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len, ptp_res_t* res);
 
 /*
  * InitiateCapture

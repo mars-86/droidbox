@@ -9,6 +9,10 @@
 #define __HEADER_LEN 0x0C
 #define __PARAM_LEN 0x04
 
+#define __RESPONSE_PHASE 0x00
+#define __DATA_PHASE 0x01
+#define __EVENT_PHASE 0x02
+
 #define PTP_REQUEST_LEN(nparams) (__HEADER_LEN + (nparams * __PARAM_LEN))
 #define PTP_DATA_REQUEST_LEN(payload_len) (__HEADER_LEN + payload_len)
 
@@ -44,13 +48,16 @@ struct ptp_container {
     };
 } __attribute__((packed));
 
-static ptp_res_t __send_request(int fd, int endpoint, const uint8_t* req, uint32_t len, uint8_t* res, ptp_res_params_t* rparams)
+static ptp_res_t __send_request(int fd, int endpoint, const uint8_t* req, uint32_t len, uint8_t* res, ptp_res_params_t* rparams, int next_phase)
 {
+    ptp_res_t __res = { 0 };
     int sent_bytes = usb_bulk_send(fd, endpoint, (void*)req, len);
+
+    if (next_phase == __DATA_PHASE)
+        return __res;
 
     int res_block = 0, offset = 0;
     uint8_t __rbuffer[512];
-    ptp_res_t __res = { 0 };
     while (!res_block) {
         int recv_bytes = usb_bulk_recv(fd, endpoint, __rbuffer, sizeof(__rbuffer));
         int data_len = RESPONSE_LENGTH_MASK(__rbuffer);
@@ -88,14 +95,14 @@ static ptp_res_t __send_request(int fd, int endpoint, const uint8_t* req, uint32
     return __res;
 }
 
-static ptp_res_t __handle_request(usb_dev_t fd, int endpoint, void* container, uint8_t* data, uint32_t len, ptp_res_params_t* rparams)
+static ptp_res_t __handle_request(usb_dev_t fd, int endpoint, void* container, uint8_t* data, uint32_t len, ptp_res_params_t* rparams, int next_phase)
 {
     struct ptp_header* header = (struct ptp_header*)container;
     int __bytes_len = header->ContaierLength;
     unsigned char __rstream[__RESPONSE_BUFFER_LEN];
     unsigned char* __ptpstream = container;
 
-    ptp_res_t __res = __send_request(fd, endpoint, __ptpstream, __bytes_len, __rstream, rparams);
+    ptp_res_t __res = __send_request(fd, endpoint, __ptpstream, __bytes_len, __rstream, rparams, next_phase);
 
     if (data) {
         /* check if provided buffer is large enougth to copy the response */
@@ -129,7 +136,7 @@ ptp_res_t ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len)
     printf("GET DEVICE INFO\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id)
@@ -148,7 +155,7 @@ ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id)
     printf("OPEN SESSION\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_close_session(ptp_dev_t* dev)
@@ -164,7 +171,7 @@ ptp_res_t ptp_close_session(ptp_dev_t* dev)
     printf("CLOSE SESSION\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len)
@@ -181,7 +188,7 @@ ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len)
     printf("GET STORAGE ID\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* data, uint32_t len)
@@ -200,7 +207,7 @@ ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* dat
     printf("GET STORAGE INFO\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, ptp_res_params_t* rparams)
@@ -221,7 +228,7 @@ ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t obje
     printf("GET NUM OBJECTS\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, rparams);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, rparams, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, uint8_t* data, uint32_t len)
@@ -242,7 +249,7 @@ ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t o
     printf("GET OBJECT HANDLES\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len)
@@ -261,7 +268,7 @@ ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* d
     printf("GET OBJECT INFO\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len)
@@ -280,7 +287,7 @@ ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, 
     printf("GET OBJECT\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len)
@@ -299,7 +306,7 @@ ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, u
     printf("GET OBJECT\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len)
@@ -319,7 +326,7 @@ ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t obj
     printf("GET DELETE OBJECT\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL);
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, data, len, NULL, __RESPONSE_PHASE);
 }
 
 ptp_res_t
@@ -337,63 +344,54 @@ ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle
     __ptpreq.cmd_payload.Parameter1 = storage_id;
     __ptpreq.cmd_payload.Parameter2 = object_handle;
 
-    unsigned char* __ptpstream = (unsigned char*)&__ptpreq;
 #ifdef __DEBUG
     printf("SEND OBJECT INFO\n");
 #endif
 
-    int sent_bytes = usb_bulk_send(dev->fd, dev->endp, (void*)__ptpstream, __ptpreq.header.ContaierLength);
+    __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, rparams, __DATA_PHASE);
 
-    __ptpreq.header.ContaierLength = PTP_DATA_REQUEST_LEN(sizeof(struct object_info2));
+    __ptpreq.header.ContaierLength = sizeof(struct object_info2);
     __ptpreq.header.ContainerType = PTP_CONTAINER_TYPE_DATA_BLOCK;
     __ptpreq.header.Code = PTP_REQUEST_SEND_OBJECT_INFO;
     __ptpreq.header.TransacionID = transaction_id;
 
+    // TODO: fix this to accept object_info parameter
     struct object_info2 oi2 = { 0 };
 
     __ptpreq.data_payload = (uint8_t*)&oi2;
 
-    ptp_res_t __cmd_res = __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, rparams);
-
-    return __cmd_res;
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, rparams, __RESPONSE_PHASE);
 }
 
-ptp_res_t ptp_send_object(ptp_dev_t* dev, uint8_t* object, uint32_t len)
+ptp_res_t ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len)
 {
     int nparams = 0;
     struct ptp_container __ptpreq = { 0 };
+    uint32_t transaction_id = __get_transaction_id();
 
     __ptpreq.header.ContaierLength = PTP_REQUEST_LEN(nparams);
     __ptpreq.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
     __ptpreq.header.Code = PTP_REQUEST_SEND_OBJECT;
-    __ptpreq.header.TransacionID = __get_transaction_id();
-
-    uint8_t* __ptpstream = (uint8_t*)&__ptpreq;
+    __ptpreq.header.TransacionID = transaction_id;
 
 #ifdef __DEBUG
     printf("SEND OBJECT\n");
 #endif
 
-    int sent_bytes = usb_bulk_send(dev->fd, dev->endp, (void*)__ptpstream, __ptpreq.header.ContaierLength);
+    __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, NULL, __DATA_PHASE);
 
     struct ptp_container __ptpreq2 = { 0 };
     uint8_t* __payload;
 
-    __ptpreq2.header.ContaierLength = PTP_DATA_REQUEST_LEN(sizeof(struct object_info2));
+    __ptpreq2.header.ContaierLength = PTP_DATA_REQUEST_LEN(len);
     __ptpreq2.header.ContainerType = PTP_CONTAINER_TYPE_DATA_BLOCK;
     __ptpreq2.header.Code = PTP_REQUEST_SEND_OBJECT;
-    __ptpreq2.header.TransacionID = __get_transaction_id();
+    __ptpreq2.header.TransacionID = transaction_id;
 
+    // TODO: fix this to accept object parameter
     struct object_info2 oi2 = { 0 };
 
     __ptpreq2.data_payload = (uint8_t*)&oi2;
-    // memcpy(__ptpreq2.data_payload + 56, obj_info->Filename, 8);
 
-    // for (int i = 0; i < len; ++i)
-    //    printf("%.2X", __ptpreq2.data_payload[i]);
-    // printf("\n");
-
-    ptp_res_t __cmd_res = __handle_request(dev->fd, dev->endp, &__ptpreq2, NULL, 0, NULL);
-
-    return __cmd_res;
+    return __handle_request(dev->fd, dev->endp, &__ptpreq2, NULL, 0, NULL, __RESPONSE_PHASE);
 }

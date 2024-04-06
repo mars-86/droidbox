@@ -142,31 +142,12 @@ int main(int argc, char* argv[])
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    // struct object_info* obj_info = alloc_object_info(20, 0, 0, 0);
-    // obj_info->ObjectFormat = PTP_OBJECT_FORMAT_TEXT;
-    // obj_info->ObjectCompressedSize = 1024;
-
-    // memcpy(obj_info->Filename, "text.txt", 8);
-    /*
-        struct object_info obj_info = { 0 };
-        const char fname[] = "text.txt";
-
-        obj_info.Filename = (char*)fname;
-        obj_info.Keywords = NULL;
-        obj_info.ModificationDate = NULL;
-        obj_info.CaptureDate = NULL;
-
-        printf("%ld\n", sizeof(obj_info));
-        printf("%ld\n", sizeof(obj_info.Filename));
-        devres = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, &obj_info, 66, &rparams);
-        printf("%s\n", ptp_get_error(devres.code));
-
-        printf("%d\n", rparams.Parameter1);
-        printf("%d\n", rparams.Parameter2);
-        printf("%d\n", rparams.Parameter3);
-    */
     devres = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &rparams);
     printf("%s\n", ptp_get_error(devres.code));
+
+    printf("%d\n", rparams.Parameter1);
+    printf("%d\n", rparams.Parameter2);
+    printf("%d\n", rparams.Parameter3);
 
     devres = ptp_close_session(&ptpdev);
     printf("%s\n", ptp_get_error(devres.code));
