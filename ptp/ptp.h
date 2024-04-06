@@ -429,7 +429,7 @@ ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t obj
  * issued along with the StoreRemoved event.
  */
 
-int ptp_send_object(uint8_t* data);
+ptp_res_t ptp_send_object(ptp_dev_t* dev, uint8_t* object, uint32_t len);
 
 /*
  * InitiateCapture
