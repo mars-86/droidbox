@@ -6,10 +6,8 @@
 #include "dataset.h"
 #include "error.h"
 #include "object.h"
+#include "storage.h"
 #include <stdint.h>
-
-#define STORAGE_PHYSICAL_ID_MASK(storage_id) ((storage_id | 0xFFFF0000) >> 16)
-#define STORAGE_LOGICAL_ID_MASK(storage_id) (storage_id | 0x0000FFFF)
 
 struct ptp_res_params {
     uint32_t Parameter1;
@@ -405,7 +403,7 @@ ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t obj
  * response as the second operation parameter for a child’s SendObjectInfo operation.
  */
 
-int ptp_send_object_info(uint32_t storage_id, uint32_t object_handle, uint8_t* data);
+ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, struct object_info* obj_info, uint32_t len, ptp_res_params_t* rparams);
 
 /*
  * SendObject
