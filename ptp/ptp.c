@@ -402,6 +402,10 @@ int ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len, ptp_res_t* res)
 
 int ptp_initiate_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res)
 {
+// TODO: implement this function
+#ifdef __DEBUG
+    printf("INITIATE CAPTURE\n");
+#endif
     return 0;
 }
 
@@ -420,6 +424,23 @@ int ptp_format_store(ptp_dev_t* dev, uint32_t storage_id, uint32_t fs_format, pt
 
 #ifdef __DEBUG
     printf("FORMAT STORE\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
+
+int ptp_reset_device(ptp_dev_t* dev, ptp_res_t* res)
+{
+    int nparams = 0;
+    struct ptp_header __ptpcmd = { 0 };
+
+    __ptpcmd.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.Code = PTP_REQUEST_RESET_DEVICE;
+    __ptpcmd.TransacionID = __get_transaction_id();
+
+#ifdef __DEBUG
+    printf("RESET DEVICE\n");
 #endif
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);

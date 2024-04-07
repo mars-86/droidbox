@@ -506,7 +506,7 @@ int ptp_format_store(ptp_dev_t* dev, uint32_t storage_id, uint32_t fs_format, pt
  * the sessions.
  */
 
-int ptp_reset_device(ptp_dev_t* dev);
+int ptp_reset_device(ptp_dev_t* dev, ptp_res_t* res);
 
 /*
  * SelfTest
