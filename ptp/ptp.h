@@ -517,7 +517,7 @@ int ptp_reset_device(ptp_dev_t* dev, ptp_res_t* res);
  * used to indicate the type of self-test that should be performed.
  */
 
-int ptp_self_test(uint32_t self_test_type);
+int ptp_self_test(ptp_dev_t* dev, uint32_t self_test_type, ptp_res_t* res);
 
 /*
  * SetObjectProtection
