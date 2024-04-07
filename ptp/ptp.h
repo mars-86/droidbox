@@ -490,7 +490,7 @@ int ptp_initiate_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_fo
  * concurrent access, the Device_Busy operation should be returned.
  */
 
-int ptp_format_store(uint32_t storage_id, uint32_t fs_format);
+int ptp_format_store(ptp_dev_t* dev, uint32_t storage_id, uint32_t fs_format, ptp_res_t* res);
 
 /*
  * ResetDevice
