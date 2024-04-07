@@ -532,7 +532,7 @@ int ptp_self_test(ptp_dev_t* dev, uint32_t self_test_type, ptp_res_t* res);
  * Invalid_Parameter.
  */
 
-int ptp_set_object_protection(uint32_t object_handle, uint32_t protection_status);
+int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t protection_status, ptp_res_t* res);
 
 /*
  * PowerDown
