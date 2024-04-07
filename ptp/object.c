@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __ALLOC(pname, ptype, psize)                   \
+#define ALLOC(pname, ptype, psize)                     \
     if (psize) {                                       \
         pname = (ptype*)malloc(psize * sizeof(ptype)); \
         if (pname)                                     \
@@ -36,10 +36,10 @@ struct object_info* alloc_object_info(uint32_t filename_size, uint32_t capture_d
 
     memset(__obj_info, 0, sizeof(struct object_info));
 
-    __ALLOC(__obj_info->Filename, char, filename_size);
-    __ALLOC(__obj_info->CaptureDate, char, capture_date_size);
-    __ALLOC(__obj_info->ModificationDate, char, modif_date_size);
-    __ALLOC(__obj_info->Keywords, char, keywords_size);
+    ALLOC(__obj_info->Filename, char, filename_size);
+    ALLOC(__obj_info->CaptureDate, char, capture_date_size);
+    ALLOC(__obj_info->ModificationDate, char, modif_date_size);
+    ALLOC(__obj_info->Keywords, char, keywords_size);
 
     return __obj_info;
 
