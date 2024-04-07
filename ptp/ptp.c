@@ -394,3 +394,28 @@ int ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len, ptp_res_t* res)
 
     return __handle_request(dev->fd, dev->endp, &__ptpreq2, NULL, 0, res, NULL, __RESPONSE_PHASE);
 }
+
+int ptp_initiate_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res)
+{
+    return 0;
+}
+
+int ptp_format_store(ptp_dev_t* dev, uint32_t storage_id, uint32_t fs_format, ptp_res_t* res)
+{
+    int nparams = 2;
+    struct ptp_container __ptpreq = { 0 };
+
+    __ptpreq.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpreq.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpreq.header.Code = PTP_REQUEST_DELETE_OBJECT;
+    __ptpreq.header.TransacionID = __get_transaction_id();
+
+    __ptpreq.cmd_payload.Parameter1 = storage_id;
+    __ptpreq.cmd_payload.Parameter2 = fs_format;
+
+#ifdef __DEBUG
+    printf("FORMAT STORE\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpreq, NULL, 0, res, NULL, __RESPONSE_PHASE);
+}
