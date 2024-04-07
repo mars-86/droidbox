@@ -55,39 +55,41 @@ static int __send_request(int fd, int endpoint, const uint8_t* req, uint32_t len
         return -1;
 
     uint8_t __rbuffer[512];
-    while (!res_block && next_phase != __DATA_PHASE) {
-        int recv_bytes = usb_bulk_recv(fd, endpoint, __rbuffer, sizeof(__rbuffer));
-        int data_len = RESPONSE_LENGTH_MASK(__rbuffer);
+    if (next_phase != __DATA_PHASE) {
+        while (!res_block) {
+            int recv_bytes = usb_bulk_recv(fd, endpoint, __rbuffer, sizeof(__rbuffer));
+            int data_len = RESPONSE_LENGTH_MASK(__rbuffer);
 
-        switch (__RESPONSE_TYPE_MASK(__rbuffer)) {
-        case PTP_CONTAINER_TYPE_DATA_BLOCK:
-            while (1) {
-                memcpy(data + offset, __rbuffer, recv_bytes);
+            switch (__RESPONSE_TYPE_MASK(__rbuffer)) {
+            case PTP_CONTAINER_TYPE_DATA_BLOCK:
+                while (1) {
+                    memcpy(data + offset, __rbuffer, recv_bytes);
 
-                data_len -= recv_bytes;
-                offset += recv_bytes;
-                if (!data_len) {
-                    if (res)
-                        res->length = RESPONSE_LENGTH_MASK(data);
+                    data_len -= recv_bytes;
+                    offset += recv_bytes;
+                    if (!data_len) {
+                        if (res)
+                            res->length = RESPONSE_LENGTH_MASK(data);
 #ifdef __DEBUG
-                    printf("\nEND\n");
+                        printf("\nEND\n");
 #endif
-                    break;
+                        break;
+                    }
+                    recv_bytes = usb_bulk_recv(fd, endpoint, __rbuffer, sizeof(__rbuffer));
                 }
-                recv_bytes = usb_bulk_recv(fd, endpoint, __rbuffer, sizeof(__rbuffer));
-            }
-            break;
-        case PTP_CONTAINER_TYPE_RESPONSE_BLOCK:
+                break;
+            case PTP_CONTAINER_TYPE_RESPONSE_BLOCK:
 #ifdef __DEBUG
-            printf("RESPONSE BLOCK RECEIVED\n");
+                printf("RESPONSE BLOCK RECEIVED\n");
 #endif
-            if (res)
-                res->code = RESPONSE_CODE_MASK(__rbuffer);
-            if (rparams)
-                memcpy(rparams, __rbuffer + __HEADER_LEN, RESPONSE_LENGTH_MASK(__rbuffer) - __HEADER_LEN);
-            res_block = 1;
-            break;
-        default:;
+                if (res)
+                    res->code = RESPONSE_CODE_MASK(__rbuffer);
+                if (rparams)
+                    memcpy(rparams, __rbuffer + __HEADER_LEN, RESPONSE_LENGTH_MASK(__rbuffer) - __HEADER_LEN);
+                res_block = 1;
+                break;
+            default:;
+            }
         }
     }
 

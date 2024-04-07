@@ -474,7 +474,7 @@ int ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len, ptp_res_t* res);
  * Device_Busy response should be used.
  */
 
-int ptp_initiate_capture(uint32_t storage_id, uint32_t object_format_code);
+int ptp_initiate_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res);
 
 /*
  * FormatStore
