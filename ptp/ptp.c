@@ -445,3 +445,22 @@ int ptp_reset_device(ptp_dev_t* dev, ptp_res_t* res)
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
 }
+
+int ptp_self_test(ptp_dev_t* dev, uint32_t self_test_type, ptp_res_t* res)
+{
+    int nparams = 1;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_SELF_TEST;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = self_test_type;
+
+#ifdef __DEBUG
+    printf("SELF TEST\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
