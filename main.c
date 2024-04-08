@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define DEVICE "025"
+#define DEVICE "026"
 
 int main(int argc, char* argv[])
 {
@@ -83,30 +83,34 @@ int main(int argc, char* argv[])
     unsigned char response_buffer[2048];
     ptp_res_params_t rparams = { 0 };
 
-    ptp_res_t devres = ptp_open_session(&ptpdev, 0x1234);
+    ptp_res_t devres;
+    int ret;
+
+    ret = ptp_open_session(&ptpdev, 0x1234, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
-    devres = ptp_get_device_info(&ptpdev, response_buffer, 2048);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-
-    devres = ptp_get_storage_id(&ptpdev, response_buffer, 2048);
+    ret = ptp_get_device_info(&ptpdev, response_buffer, 2048, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
     for (int i = 0; i < devres.length; ++i)
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    devres = ptp_get_storage_info(&ptpdev, 0x00010001, response_buffer, 2048);
+    ret = ptp_get_storage_id(&ptpdev, response_buffer, 2048, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
     for (int i = 0; i < devres.length; ++i)
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    devres = ptp_get_num_objects(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_UNUSED, PTP_OBJECT_ASSOCIATION_ROOT, &rparams);
+    ret = ptp_get_storage_info(&ptpdev, 0x00010001, response_buffer, 2048, &devres);
+    printf("%s\n", ptp_get_error(devres.code));
+
+    for (int i = 0; i < devres.length; ++i)
+        printf("%.2X", response_buffer[i]);
+    printf("\n");
+
+    ret = ptp_get_num_objects(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_UNUSED, PTP_OBJECT_ASSOCIATION_ROOT, &devres, &rparams);
     printf("%s\n", ptp_get_error(devres.code));
 
     printf("%d\n", rparams.Parameter1);
@@ -114,62 +118,52 @@ int main(int argc, char* argv[])
     printf("%d\n", rparams.Parameter3);
 
     memset(response_buffer, 0, 2048);
-    devres = ptp_get_object_handles(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_HANDLES_UNUSED, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, response_buffer, 2048);
+    ret = ptp_get_object_handles(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_HANDLES_UNUSED, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, response_buffer, 2048, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
     for (int i = 0; i < devres.length; ++i)
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    devres = ptp_get_object_info(&ptpdev, 0x0000000D, response_buffer, 2048);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%c", response_buffer[i]);
-    printf("\n");
-
-    devres = ptp_get_object(&ptpdev, 0x00000019, response_buffer, 2048);
+    ret = ptp_get_object_info(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
     for (int i = 0; i < devres.length; ++i)
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    devres = ptp_get_thumb(&ptpdev, 0x00000001, response_buffer, 2048);
+    ret = ptp_get_object(&ptpdev, 0x00000019, response_buffer, 2048, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
+    printf("GET_OBJ\n");
     for (int i = 0; i < devres.length; ++i)
         printf("%.2X", response_buffer[i]);
     printf("\n");
 
-    // struct object_info* obj_info = alloc_object_info(20, 0, 0, 0);
-    // obj_info->ObjectFormat = PTP_OBJECT_FORMAT_TEXT;
-    // obj_info->ObjectCompressedSize = 1024;
+    ret = ptp_get_thumb(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
 
-    // memcpy(obj_info->Filename, "text.txt", 8);
-    /*
-        struct object_info obj_info = { 0 };
-        const char fname[] = "text.txt";
-
-        obj_info.Filename = (char*)fname;
-        obj_info.Keywords = NULL;
-        obj_info.ModificationDate = NULL;
-        obj_info.CaptureDate = NULL;
-
-        printf("%ld\n", sizeof(obj_info));
-        printf("%ld\n", sizeof(obj_info.Filename));
-        devres = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, &obj_info, 66, &rparams);
+    if (!ret && devres.code == PTP_RESPONSE_OK) {
+        for (int i = 0; i < devres.length; ++i)
+            printf("%.2X", response_buffer[i]);
+        printf("\n");
+    } else {
         printf("%s\n", ptp_get_error(devres.code));
+    }
 
+    ret = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &devres, &rparams);
+
+    if (!ret && devres.code == PTP_RESPONSE_OK) {
         printf("%d\n", rparams.Parameter1);
         printf("%d\n", rparams.Parameter2);
         printf("%d\n", rparams.Parameter3);
-    */
-    devres = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &rparams);
+    } else {
+        printf("%s\n", ptp_get_error(devres.code));
+    }
+
+    ret = ptp_close_session(&ptpdev, &devres);
     printf("%s\n", ptp_get_error(devres.code));
 
-    devres = ptp_close_session(&ptpdev);
-    printf("%s\n", ptp_get_error(devres.code));
+    printf("%d\n", ret);
 
     if (usb_release_interface(fd, iface) != 0)
         perror("ioctl");

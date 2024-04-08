@@ -115,7 +115,7 @@ typedef struct ptp_res ptp_res_t;
  * OperationRequest dataset shall be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len);
+int ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * OpenSession
@@ -137,7 +137,7 @@ ptp_res_t ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len);
  * 0x00000000 for this operation.
  */
 
-ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id);
+int ptp_open_session(ptp_dev_t* dev, uint32_t session_id, ptp_res_t* res);
 
 /*
  * CloseSession
@@ -147,7 +147,7 @@ ptp_res_t ptp_open_session(ptp_dev_t* dev, uint32_t session_id);
  * Description: Closes the session. Causes device to perform any session-specific cleanup.
  */
 
-ptp_res_t ptp_close_session(ptp_dev_t* dev);
+int ptp_close_session(ptp_dev_t* dev, ptp_res_t* res);
 
 /*
  * GetStorageIDs
@@ -160,7 +160,7 @@ ptp_res_t ptp_close_session(ptp_dev_t* dev);
  * PhysicalStorageID and a LogicalStorageID with the value 0x0000.
  */
 
-ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len);
+int ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetStorageInfo
@@ -171,7 +171,7 @@ ptp_res_t ptp_get_storage_id(ptp_dev_t* dev, uint8_t* data, uint32_t len);
  * parameter. This dataset is defined in Clause 5.5.3.
  */
 
-ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* data, uint32_t len);
+int ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetNumObjects
@@ -211,7 +211,7 @@ ptp_res_t ptp_get_storage_info(ptp_dev_t* dev, uint32_t storage_id, uint8_t* dat
  * should be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, ptp_res_params_t* rparams);
+int ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, ptp_res_t* res, ptp_res_params_t* rparams);
 
 /*
  * GetObjectHandles
@@ -248,7 +248,7 @@ ptp_res_t ptp_get_num_objects(ptp_dev_t* dev, uint32_t storage_id, uint32_t obje
  * parameter), and the third parameter should be set to 0x00000000.
  */
 
-ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetObjectInfo
@@ -265,7 +265,7 @@ ptp_res_t ptp_get_object_handles(ptp_dev_t* dev, uint32_t storage_id, uint32_t o
  * qualified by their ObjectInfo dataset.
  */
 
-ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetObject
@@ -282,7 +282,7 @@ ptp_res_t ptp_get_object_info(ptp_dev_t* dev, uint32_t object_handle, uint8_t* d
  * Incomplete_Transfer response should be used, along with the Store_Removed event.
  */
 
-ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * GetThumb
@@ -294,7 +294,7 @@ ptp_res_t ptp_get_object(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, 
  * ObjectHandle that is indicated in the first parameter.
  */
 
-ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len);
+int ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * DeleteObject
@@ -327,7 +327,7 @@ ptp_res_t ptp_get_thumb(ptp_dev_t* dev, uint32_t object_handle, uint8_t* data, u
  * DeleteObject operations should be issued on each object or sub-association individually.
  */
 
-ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len);
+int ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t object_format_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * SendObjectInfo
@@ -403,7 +403,7 @@ ptp_res_t ptp_delete_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t obj
  * response as the second operation parameter for a child’s SendObjectInfo operation.
  */
 
-ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, struct object_info* obj_info, uint32_t len, ptp_res_params_t* rparams);
+int ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, struct object_info* obj_info, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams);
 
 /*
  * SendObject
@@ -429,7 +429,7 @@ ptp_res_t ptp_send_object_info(ptp_dev_t* dev, uint32_t storage_id, uint32_t obj
  * issued along with the StoreRemoved event.
  */
 
-int ptp_send_object(uint8_t* data);
+int ptp_send_object(ptp_dev_t* dev, void* object, uint32_t len, ptp_res_t* res);
 
 /*
  * InitiateCapture
@@ -474,7 +474,7 @@ int ptp_send_object(uint8_t* data);
  * Device_Busy response should be used.
  */
 
-int ptp_initiate_capture(uint32_t storage_id, uint32_t object_format_code);
+int ptp_initiate_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res);
 
 /*
  * FormatStore
@@ -490,7 +490,7 @@ int ptp_initiate_capture(uint32_t storage_id, uint32_t object_format_code);
  * concurrent access, the Device_Busy operation should be returned.
  */
 
-int ptp_format_store(uint32_t storage_id, uint32_t fs_format);
+int ptp_format_store(ptp_dev_t* dev, uint32_t storage_id, uint32_t fs_format, ptp_res_t* res);
 
 /*
  * ResetDevice
@@ -506,7 +506,7 @@ int ptp_format_store(uint32_t storage_id, uint32_t fs_format);
  * the sessions.
  */
 
-int ptp_reset_device(void);
+int ptp_reset_device(ptp_dev_t* dev, ptp_res_t* res);
 
 /*
  * SelfTest
@@ -517,7 +517,7 @@ int ptp_reset_device(void);
  * used to indicate the type of self-test that should be performed.
  */
 
-int ptp_self_test(uint32_t self_test_type);
+int ptp_self_test(ptp_dev_t* dev, uint32_t self_test_type, ptp_res_t* res);
 
 /*
  * SetObjectProtection
@@ -532,7 +532,7 @@ int ptp_self_test(uint32_t self_test_type);
  * Invalid_Parameter.
  */
 
-int ptp_set_object_protection(uint32_t object_handle, uint32_t protection_status);
+int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t protection_status, ptp_res_t* res);
 
 /*
  * PowerDown
@@ -543,6 +543,194 @@ int ptp_set_object_protection(uint32_t object_handle, uint32_t protection_status
  * close.
  */
 
-int ptp_power_down(void);
+int ptp_power_down(ptp_dev_t* dev, ptp_res_t* res);
+
+/*
+ * GetDevicePropDesc
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Access_Denied, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Returns the appropriate Property Describing Dataset as indicated by the first
+ * parameter
+ */
+
+int ptp_get_device_prop_desc(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
+/*
+ * GetDevicePropValue
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Returns the current value of a property. The size and format of the data
+ * returned from this operation should be determined from the corresponding
+ * DevicePropDesc dataset returned from the GetDevicePropDesc operation. The current
+ * value of a property can also be retrieved directly from the DevicePropDesc, so this
+ * operation is not typically required unless a DevicePropChanged event occurs.
+ */
+
+int ptp_get_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
+/*
+ * SetDevicePropValue
+ * Data Direction: I -> R
+ * ResponseCode Options: OK, Session_Not_Open, Invalid_TransactionID, Access_Denied,
+ * DeviceProp_Not_Supported, Property_Not_Supported, Invalid_DeviceProp_Format,
+ * Invalid_DeviceProp_Value, Device_Busy, Parameter_Not_Supported
+ * Description: Sets the current value of the device property indicated by parameter 1 to the
+ * value indicated in the data phase of this operation. The format of the property value
+ * object sent in the data phase can be determined from the DatatypeCode field of the
+ * property’s DevicePropDesc dataset. If the property is not settable, the response
+ * Access_Denied should be returned. If the value is not allowed by the device,
+ * Invalid_DeviceProp_Value should be returned. If the format or size of the property
+ * value is incorrect, Invalid_DeviceProp_Format should be returned.
+ */
+
+int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
+/*
+ * ResetDevicePropValue
+ * Data Direction: None
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Sets the value of the indicated device property to the factory default setting.
+ * The first parameter may be set to 0xFFFFFFFF to indicate that all properties should be
+ * reset to their factory default settings.
+ */
+
+int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, ptp_res_t* res);
+
+/*
+ * TerminateOpenCapture
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Parameter_Not_Supported, Invalid_Parameter,
+ * Capture_Already_Terminated
+ * Description: This operation is used after an InitiateOpenCapture operation for situations
+ * where the capture operation length is open-ended, and determined by the Initiator. This
+ * operation is not used for trigger captures, which are invoked using a separate operation,
+ * InitiateCapture, described in Clause 10.4.14. This operation allows the termination of
+ * one capture operation that is being used to capture many objects over some period of
+ * time, such as a burst, or for long single objects such as manually-controlled image
+ * exposures, audio captures, or video clips. The first parameter of this operation indicates
+ * the TransactionID of the InitiateOpenCapture operation that is being terminated. If the
+ * capture has already terminated for some other reason, this operation should return
+ * Capture_Already_Terminated. If the TransactionID parameter does not refer to
+ * transaction that was an InitiateOpenCapture, this operation should return
+ * Invalid_TransactionID.
+ */
+
+int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_t* res);
+
+/*
+ * MoveObject
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Store_Read_Only, Store_Not_Available, Invalid_ObjectHandle,
+ * Invalid_ParentObject, Device_Busy, Parameter_Not_Supported, Invalid_StorageHandle
+ * Description: This operation causes the object to be moved from its location within the
+ * hierarchy to a new location indicated by the second and third parameters. If the root of
+ * the store is desired, the third parameter may be set to 0x00000000. If the third parameter
+ * does not refer to a valid object of type Association, the response Invalid_ParentObject
+ * should be returned. If a store is read-only (with or without deletion) the response
+ * Store_Read_Only should be returned. This operation does not cause the ObjectHandle
+ * of the object that is being moved to change. If the object is to be moved
+ */
+
+int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res);
+
+/*
+ * CopyObject
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Store_Read_Only, Invalid_ObjectHandle, Invalid_ParentObject,
+ * Device_Busy, Store_Full, Parameter_Not_Supported, Invalid_StorageID
+ * Description: This operation causes the object to be replicated within the Responder. The
+ * first parameter refers to the ObjectHandle of the object that is to be copied. The second
+ * parameter refers to the StorageID into which the newly copied object should be placed.
+ * The third parameter refers to the ParentObject of where the newly replicated copy should
+ * be placed. If the object is to be copied into the root of the store, this value should be set
+ * to 0x00000000.
+ */
+
+int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res, ptp_res_params_t* rparams);
+
+/*
+ * GetPartialObject
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Invalid_ObjectHandle, Invalid_ObjectFormatCode,
+ * Invalid_Parameter, Store_Not_Available, Device_Busy, Parameter_Not_Supported
+ * Description: Retrieves a partial object from the device. This operation is optional, and may
+ * be used in place of the GetObject operation for devices that support this alternative. If
+ * supported, this operation should be generic, and therefore useable with all types of data
+ * objects present on the device, including both images and non-image data objects, and
+ * should be preceded (although not necessarily immediately) by a GetObjectInfo operation
+ * that uses the same ObjectHandle. For this operation, the size fields in the ObjectInfo
+ * represent maximum size as opposed to actual size. This operation is not necessary for
+ * objects of type Association, as objects of this type are fully qualified by their ObjectInfo
+ * dataset.
+ * The operation behaves exactly like GetObject, except that the second and third
+ * parameters hold the offset in bytes and the number of bytes to obtain starting from the
+ * offset, respectively. If the portion of the object that is desired is from the offset to the
+ * end, the third parameter may be set to 0xFFFFFFFF. The first response parameter
+ * should contain the actual number of bytes of the object sent, not including any wrappers
+ * or overhead structures.
+ */
+
+int ptp_get_partial_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t offset, uint32_t max_bytes, uint8_t* data, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams);
+
+/*
+ * InitiateOpenCapture
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Invalid_StorageID, Store_Full, Invalid_ObjectFormatCode,
+ * Invalid_Parameter, Store_Not_Available, Invalid_Code_Format, Device_Busy,
+ * Description: Causes the device to initiate the capture of one or more new data objects
+ * according to its current device properties, storing the data into the store indicated by the
+ * StorageID. If the StorageID is 0x00000000, the object(s) will be stored in a store that is
+ * determined by the capturing device. If the particular store specified is not available, or
+ * no store is specified and there are no stores available, this operation should return
+ * Store_Not_Available.
+ * The capturing of new data objects is an asynchronous operation. This operation may be
+ * used to implement an Initiate/Terminate mechanism to capture one or more objects over
+ * an Initiator-controlled time period, such as a single long still exposure, a series of stills,
+ * audio capture, etc. Whether the time period controls the time of capture for a single
+ * object or the number of fixed-time objects that are captured is determined by the
+ * Responder, and may be a function of the ObjectFormat as well as any appropriate
+ * DeviceProperties.
+ * A separate operation, InitiateCapture, can be used to
+ * support captures that do not require the Initiator to indicate when the capture should
+ * terminate.
+ * If the ObjectFormatCode in the second operation parameter is 0x00000000, the device
+ * shall capture an image in the format that is the default for the device. A successful
+ * response to an InitiateOpenCapture operation indicates the Responder’s acceptance of
+ * the InitiateOpenCapture operation, and not the completion status of the capture
+ * operation.
+ * A successful response to the InitiateOpenCapture operation implies that the Responder
+ * has started to capture one or more objects. When the Initiator wishes to terminate the
+ * capture, it is required to send a TerminateOpenCapture operation. The CaptureComplete
+ * event is not used for this operation, as the end of the capture period is determined by the
+ * Initiator. As each of the newly captured objects becomes available, the Responder is
+ * required to send an ObjectAdded event to the Initiator, indicating the ObjectHandle that
+ * is assigned to each. The ObjectAdded event shall contain
+ * the TransactionID of the InitiateOpenCapture operation with which it is associated. If, at
+ * any time, the store becomes full, the device shall issue a Store_Full event, which shall
+ * contain the TransactionID of the InitiateOpenCapture operation that failed to cause a
+ * new object to be stored. In the case of multiple objects being captured, each object shall
+ * be treated separately, so any object captured before the store becomes full should be
+ * retained. Whether or not an object that was partially captured can be retained and used is
+ * a function of the device’s behavior and object format. For example, if the device runs
+ * out of room while capturing a video clip, it may be able to save the portion that it had
+ * room to store. Any object that is retained in these situations should cause an
+ * ObjectAdded event to be issued, while any object that is not retained should cause no
+ * event to be issued. A Store_Full event effectively terminates the capture, and in these
+ * cases, issuing the TerminateOpenCapture operation is not used. If another object capture
+ * is occurring when this operation is invoked, the Device_Busy response should be used.
+ */
+
+int ptp_initiate_open_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res);
 
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__

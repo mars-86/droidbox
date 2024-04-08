@@ -101,8 +101,4 @@ struct object_info2 {
 #define PTP_OBJECT_FORMAT_JP2 0x380F // I JP2 JPEG2000 Baseline File Format
 #define PTP_OBJECT_FORMAT_JPX 0x3810 // I JPX JPEG2000 Extended File Format
 
-struct object_info* alloc_object_info(uint32_t filename_size, uint32_t capture_date_size, uint32_t modif_date_size, uint32_t keywords_size);
-
-void destroy_object_info(const struct object_info* obj_info);
-
 #endif // __PICTURE_TRANSFER_PROTOCOL_OBJECT_INCLUDED_H__
