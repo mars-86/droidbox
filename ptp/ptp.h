@@ -627,4 +627,21 @@ int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, ptp_r
 
 int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_t* res);
 
+/*
+ * MoveObject
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Store_Read_Only, Store_Not_Available, Invalid_ObjectHandle,
+ * Invalid_ParentObject, Device_Busy, Parameter_Not_Supported, Invalid_StorageHandle
+ * Description: This operation causes the object to be moved from its location within the
+ * hierarchy to a new location indicated by the second and third parameters. If the root of
+ * the store is desired, the third parameter may be set to 0x00000000. If the third parameter
+ * does not refer to a valid object of type Association, the response Invalid_ParentObject
+ * should be returned. If a store is read-only (with or without deletion) the response
+ * Store_Read_Only should be returned. This operation does not cause the ObjectHandle
+ * of the object that is being moved to change. If the object is to be moved
+ */
+
+int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
