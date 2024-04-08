@@ -659,3 +659,23 @@ int ptp_get_partial_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t offs
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, data, len, res, rparams, RESPONSE_PHASE);
 }
+
+int ptp_initiate_open_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res)
+{
+    int nparams = 2;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_INITIAL_OPEN_CAPTURE;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = storage_id;
+    __ptpcmd.payload.Parameter2 = object_format_code;
+
+#ifdef __DEBUG
+    printf("INITIATE OPEN CAPTURE\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
