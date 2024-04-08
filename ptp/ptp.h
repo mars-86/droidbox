@@ -605,4 +605,28 @@ int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
 
 int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
+/*
+ * TerminateOpenCapture
+ * OperationCode: 0x1018
+ * Data: None
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Parameter_Not_Supported, Invalid_Parameter,
+ * Capture_Already_Terminated
+ * Description: This operation is used after an InitiateOpenCapture operation for situations
+ * where the capture operation length is open-ended, and determined by the Initiator. This
+ * operation is not used for trigger captures, which are invoked using a separate operation,
+ * InitiateCapture, described in Clause 10.4.14. This operation allows the termination of
+ * one capture operation that is being used to capture many objects over some period of
+ * time, such as a burst, or for long single objects such as manually-controlled image
+ * exposures, audio captures, or video clips. The first parameter of this operation indicates
+ * the TransactionID of the InitiateOpenCapture operation that is being terminated. If the
+ * capture has already terminated for some other reason, this operation should return
+ * Capture_Already_Terminated. If the TransactionID parameter does not refer to
+ * transaction that was an InitiateOpenCapture, this operation should return
+ * Invalid_TransactionID.
+ */
+
+int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
