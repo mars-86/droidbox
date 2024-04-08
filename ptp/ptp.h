@@ -573,4 +573,22 @@ int ptp_get_device_prop_desc(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t*
 
 int ptp_get_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
+/*
+ * SetDevicePropValue
+ * Data: Device Property Value
+ * Data Direction: I -> R
+ * ResponseCode Options: OK, Session_Not_Open, Invalid_TransactionID, Access_Denied,
+ * DeviceProp_Not_Supported, Property_Not_Supported, Invalid_DeviceProp_Format,
+ * Invalid_DeviceProp_Value, Device_Busy, Parameter_Not_Supported
+ * Description: Sets the current value of the device property indicated by parameter 1 to the
+ * value indicated in the data phase of this operation. The format of the property value
+ * object sent in the data phase can be determined from the DatatypeCode field of the
+ * property’s DevicePropDesc dataset. If the property is not settable, the response
+ * Access_Denied should be returned. If the value is not allowed by the device,
+ * Invalid_DeviceProp_Value should be returned. If the format or size of the property
+ * value is incorrect, Invalid_DeviceProp_Format should be returned.
+ */
+
+int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
