@@ -484,3 +484,20 @@ int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t p
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
 }
+
+int ptp_power_down(ptp_dev_t* dev, ptp_res_t* res)
+{
+    int nparams = 0;
+    struct ptp_header __ptpcmd = { 0 };
+
+    __ptpcmd.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.Code = PTP_REQUEST_POWER_DOWN;
+    __ptpcmd.TransacionID = __get_transaction_id();
+
+#ifdef __DEBUG
+    printf("POWER DOWN\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
