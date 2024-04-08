@@ -557,4 +557,20 @@ int ptp_power_down(ptp_dev_t* dev, ptp_res_t* res);
 
 int ptp_get_device_prop_desc(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
+/*
+ * GetDevicePropValue
+ * Data: DeviceProperty Value
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Returns the current value of a property. The size and format of the data
+ * returned from this operation should be determined from the corresponding
+ * DevicePropDesc dataset returned from the GetDevicePropDesc operation. The current
+ * value of a property can also be retrieved directly from the DevicePropDesc, so this
+ * operation is not typically required unless a DevicePropChanged event occurs.
+ */
+
+int ptp_get_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
