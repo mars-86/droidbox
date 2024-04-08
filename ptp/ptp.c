@@ -617,3 +617,24 @@ int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle,
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
 }
+
+int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res, ptp_res_params_t* rparams)
+{
+    int nparams = 3;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_COPY_OBJECT;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = object_handle;
+    __ptpcmd.payload.Parameter2 = storage_id;
+    __ptpcmd.payload.Parameter3 = object_handle_parent;
+
+#ifdef __DEBUG
+    printf("COPY OBJECT\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, rparams, RESPONSE_PHASE);
+}

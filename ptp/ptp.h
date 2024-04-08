@@ -559,7 +559,6 @@ int ptp_get_device_prop_desc(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t*
 
 /*
  * GetDevicePropValue
- * Data: DeviceProperty Value
  * Data Direction: R -> I
  * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
  * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
@@ -575,7 +574,6 @@ int ptp_get_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
 
 /*
  * SetDevicePropValue
- * Data: Device Property Value
  * Data Direction: I -> R
  * ResponseCode Options: OK, Session_Not_Open, Invalid_TransactionID, Access_Denied,
  * DeviceProp_Not_Supported, Property_Not_Supported, Invalid_DeviceProp_Format,
@@ -593,7 +591,6 @@ int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
 
 /*
  * ResetDevicePropValue
- * Data: None
  * Data Direction: None
  * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
  * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
@@ -645,7 +642,7 @@ int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_
 int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res);
 
 /*
- *  CopyObject
+ * CopyObject
  * Data Direction: N/A
  * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
  * Invalid_TransactionID, Store_Read_Only, Invalid_ObjectHandle, Invalid_ParentObject,
