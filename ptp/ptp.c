@@ -479,7 +479,7 @@ int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t p
     __ptpcmd.payload.Parameter2 = protection_status;
 
 #ifdef __DEBUG
-    printf("SELF TEST\n");
+    printf("SET OBJECT PROTECTION\n");
 #endif
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);

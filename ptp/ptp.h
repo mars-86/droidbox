@@ -543,6 +543,6 @@ int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t p
  * close.
  */
 
-int ptp_power_down(void);
+int ptp_power_down(ptp_dev_t* dev, ptp_res_t* res);
 
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
