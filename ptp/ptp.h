@@ -682,4 +682,55 @@ int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle,
 
 int ptp_get_partial_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t offset, uint32_t max_bytes, uint8_t* data, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams);
 
+/*
+ * InitiateOpenCapture
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Invalid_StorageID, Store_Full, Invalid_ObjectFormatCode,
+ * Invalid_Parameter, Store_Not_Available, Invalid_Code_Format, Device_Busy,
+ * Description: Causes the device to initiate the capture of one or more new data objects
+ * according to its current device properties, storing the data into the store indicated by the
+ * StorageID. If the StorageID is 0x00000000, the object(s) will be stored in a store that is
+ * determined by the capturing device. If the particular store specified is not available, or
+ * no store is specified and there are no stores available, this operation should return
+ * Store_Not_Available.
+ * The capturing of new data objects is an asynchronous operation. This operation may be
+ * used to implement an Initiate/Terminate mechanism to capture one or more objects over
+ * an Initiator-controlled time period, such as a single long still exposure, a series of stills,
+ * audio capture, etc. Whether the time period controls the time of capture for a single
+ * object or the number of fixed-time objects that are captured is determined by the
+ * Responder, and may be a function of the ObjectFormat as well as any appropriate
+ * DeviceProperties.
+ * A separate operation, InitiateCapture, can be used to
+ * support captures that do not require the Initiator to indicate when the capture should
+ * terminate.
+ * If the ObjectFormatCode in the second operation parameter is 0x00000000, the device
+ * shall capture an image in the format that is the default for the device. A successful
+ * response to an InitiateOpenCapture operation indicates the Responder’s acceptance of
+ * the InitiateOpenCapture operation, and not the completion status of the capture
+ * operation.
+ * A successful response to the InitiateOpenCapture operation implies that the Responder
+ * has started to capture one or more objects. When the Initiator wishes to terminate the
+ * capture, it is required to send a TerminateOpenCapture operation. The CaptureComplete
+ * event is not used for this operation, as the end of the capture period is determined by the
+ * Initiator. As each of the newly captured objects becomes available, the Responder is
+ * required to send an ObjectAdded event to the Initiator, indicating the ObjectHandle that
+ * is assigned to each. The ObjectAdded event shall contain
+ * the TransactionID of the InitiateOpenCapture operation with which it is associated. If, at
+ * any time, the store becomes full, the device shall issue a Store_Full event, which shall
+ * contain the TransactionID of the InitiateOpenCapture operation that failed to cause a
+ * new object to be stored. In the case of multiple objects being captured, each object shall
+ * be treated separately, so any object captured before the store becomes full should be
+ * retained. Whether or not an object that was partially captured can be retained and used is
+ * a function of the device’s behavior and object format. For example, if the device runs
+ * out of room while capturing a video clip, it may be able to save the portion that it had
+ * room to store. Any object that is retained in these situations should cause an
+ * ObjectAdded event to be issued, while any object that is not retained should cause no
+ * event to be issued. A Store_Full event effectively terminates the capture, and in these
+ * cases, issuing the TerminateOpenCapture operation is not used. If another object capture
+ * is occurring when this operation is invoked, the Device_Busy response should be used.
+ */
+
+int ptp_initiate_open_capture(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_format_code, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
