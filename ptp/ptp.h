@@ -545,4 +545,16 @@ int ptp_set_object_protection(ptp_dev_t* dev, uint32_t object_handle, uint32_t p
 
 int ptp_power_down(ptp_dev_t* dev, ptp_res_t* res);
 
+/*
+ * GetDevicePropDesc
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Access_Denied, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Returns the appropriate Property Describing Dataset as indicated by the first
+ * parameter
+ */
+
+int ptp_get_device_prop_desc(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
