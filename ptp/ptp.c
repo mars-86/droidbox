@@ -578,20 +578,41 @@ int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, ptp_r
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
 }
 
-int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t device_prop_code, ptp_res_t* res)
+int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_t* res)
 {
     int nparams = 1;
     struct ptp_cmd_container __ptpcmd = { 0 };
 
     __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
     __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
-    __ptpcmd.header.Code = PTP_REQUEST_RESET_DEVICE_PROP_VALUE;
+    __ptpcmd.header.Code = PTP_REQUEST_TERMINATE_OPEN_CAPTURE;
     __ptpcmd.header.TransacionID = __get_transaction_id();
 
-    __ptpcmd.payload.Parameter1 = device_prop_code;
+    __ptpcmd.payload.Parameter1 = transaction_id;
 
 #ifdef __DEBUG
     printf("TERMINATE OPEN CAPTURE\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
+
+int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res)
+{
+    int nparams = 3;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_MOVE_OBJECT;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = object_handle;
+    __ptpcmd.payload.Parameter2 = storage_id;
+    __ptpcmd.payload.Parameter3 = object_handle_parent;
+
+#ifdef __DEBUG
+    printf("MOVE OBJECT\n");
 #endif
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
