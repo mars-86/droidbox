@@ -603,12 +603,10 @@ int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
  * reset to their factory default settings.
  */
 
-int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, ptp_res_t* res);
 
 /*
  * TerminateOpenCapture
- * OperationCode: 0x1018
- * Data: None
  * Data Direction: N/A
  * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
  * Invalid_TransactionID, Parameter_Not_Supported, Invalid_Parameter,
@@ -627,6 +625,6 @@ int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8
  * Invalid_TransactionID.
  */
 
-int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_t* res);
 
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__

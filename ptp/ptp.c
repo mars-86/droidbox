@@ -559,7 +559,7 @@ int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, data, len, res, NULL, RESPONSE_PHASE);
 }
 
-int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res)
+int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, ptp_res_t* res)
 {
     int nparams = 1;
     struct ptp_cmd_container __ptpcmd = { 0 };
@@ -575,5 +575,24 @@ int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8
     printf("RESET DEVICE PROP VALUE\n");
 #endif
 
-    return __handle_request(dev->fd, dev->endp, &__ptpcmd, data, len, res, NULL, RESPONSE_PHASE);
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
+}
+
+int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t device_prop_code, ptp_res_t* res)
+{
+    int nparams = 1;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_RESET_DEVICE_PROP_VALUE;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = device_prop_code;
+
+#ifdef __DEBUG
+    printf("TERMINATE OPEN CAPTURE\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, NULL, RESPONSE_PHASE);
 }
