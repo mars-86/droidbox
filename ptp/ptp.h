@@ -657,4 +657,29 @@ int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle,
 
 int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res, ptp_res_params_t* rparams);
 
+/*
+ * GetPartialObject
+ * Data Direction: R -> I
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Invalid_ObjectHandle, Invalid_ObjectFormatCode,
+ * Invalid_Parameter, Store_Not_Available, Device_Busy, Parameter_Not_Supported
+ * Description: Retrieves a partial object from the device. This operation is optional, and may
+ * be used in place of the GetObject operation for devices that support this alternative. If
+ * supported, this operation should be generic, and therefore useable with all types of data
+ * objects present on the device, including both images and non-image data objects, and
+ * should be preceded (although not necessarily immediately) by a GetObjectInfo operation
+ * that uses the same ObjectHandle. For this operation, the size fields in the ObjectInfo
+ * represent maximum size as opposed to actual size. This operation is not necessary for
+ * objects of type Association, as objects of this type are fully qualified by their ObjectInfo
+ * dataset.
+ * The operation behaves exactly like GetObject, except that the second and third
+ * parameters hold the offset in bytes and the number of bytes to obtain starting from the
+ * offset, respectively. If the portion of the object that is desired is from the offset to the
+ * end, the third parameter may be set to 0xFFFFFFFF. The first response parameter
+ * should contain the actual number of bytes of the object sent, not including any wrappers
+ * or overhead structures.
+ */
+
+int ptp_get_partial_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t offset, uint32_t max_bytes, uint8_t* data, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__

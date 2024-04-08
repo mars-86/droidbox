@@ -638,3 +638,24 @@ int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle,
 
     return __handle_request(dev->fd, dev->endp, &__ptpcmd, NULL, 0, res, rparams, RESPONSE_PHASE);
 }
+
+int ptp_get_partial_object(ptp_dev_t* dev, uint32_t object_handle, uint32_t offset, uint32_t max_bytes, uint8_t* data, uint32_t len, ptp_res_t* res, ptp_res_params_t* rparams)
+{
+    int nparams = 3;
+    struct ptp_cmd_container __ptpcmd = { 0 };
+
+    __ptpcmd.header.ContaierLength = PTP_REQUEST_LEN(nparams);
+    __ptpcmd.header.ContainerType = PTP_CONTAINER_TYPE_COMMAND_BLOCK;
+    __ptpcmd.header.Code = PTP_REQUEST_GET_PARTIAL_OBJECT;
+    __ptpcmd.header.TransacionID = __get_transaction_id();
+
+    __ptpcmd.payload.Parameter1 = object_handle;
+    __ptpcmd.payload.Parameter2 = offset;
+    __ptpcmd.payload.Parameter3 = max_bytes;
+
+#ifdef __DEBUG
+    printf("GET PARTIAL OBJECT\n");
+#endif
+
+    return __handle_request(dev->fd, dev->endp, &__ptpcmd, data, len, res, rparams, RESPONSE_PHASE);
+}
