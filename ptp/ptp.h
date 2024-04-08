@@ -591,4 +591,18 @@ int ptp_get_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t
 
 int ptp_set_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
 
+/*
+ * ResetDevicePropValue
+ * Data: None
+ * Data Direction: None
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, DeviceProp_Not_Supported, Device_Busy,
+ * Parameter_Not_Supported
+ * Description: Sets the value of the indicated device property to the factory default setting.
+ * The first parameter may be set to 0xFFFFFFFF to indicate that all properties should be
+ * reset to their factory default settings.
+ */
+
+int ptp_reset_device_prop_value(ptp_dev_t* dev, uint32_t device_prop_code, uint8_t* data, uint32_t len, ptp_res_t* res);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
