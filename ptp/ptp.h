@@ -644,4 +644,20 @@ int ptp_terminate_open_capture(ptp_dev_t* dev, uint32_t transaction_id, ptp_res_
 
 int ptp_move_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res);
 
+/*
+ *  CopyObject
+ * Data Direction: N/A
+ * ResponseCode Options: OK, Operation_Not_Supported, Session_Not_Open,
+ * Invalid_TransactionID, Store_Read_Only, Invalid_ObjectHandle, Invalid_ParentObject,
+ * Device_Busy, Store_Full, Parameter_Not_Supported, Invalid_StorageID
+ * Description: This operation causes the object to be replicated within the Responder. The
+ * first parameter refers to the ObjectHandle of the object that is to be copied. The second
+ * parameter refers to the StorageID into which the newly copied object should be placed.
+ * The third parameter refers to the ParentObject of where the newly replicated copy should
+ * be placed. If the object is to be copied into the root of the store, this value should be set
+ * to 0x00000000.
+ */
+
+int ptp_copy_object(ptp_dev_t* dev, uint32_t storage_id, uint32_t object_handle, uint32_t object_handle_parent, ptp_res_t* res, ptp_res_params_t* rparams);
+
 #endif // __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
