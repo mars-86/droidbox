@@ -41,6 +41,7 @@ struct usb_parsed_config_descriptor {
 
 static int __usb_bulk_msg(int fd, struct usbdevfs_urb* uurb)
 {
+    printf("SUBMIT URB\n");
     int res;
     do {
         res = ioctl(fd, USBDEVFS_SUBMITURB, uurb);
@@ -50,6 +51,7 @@ static int __usb_bulk_msg(int fd, struct usbdevfs_urb* uurb)
         return 1;
     }
 
+    printf("SUBMIT REAPURB\n");
     unsigned char uurb_id[8];
     do {
         res = ioctl(fd, USBDEVFS_REAPURB, uurb_id);
