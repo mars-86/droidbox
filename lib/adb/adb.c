@@ -114,3 +114,16 @@ int adb_connect(adb_dev_t* dev, uint32_t version, uint32_t maxdata, const char* 
 
     return __handle_request(dev, &__msg, data, len, res);
 }
+
+int adb_stls(adb_dev_t* dev, uint32_t type, uint32_t version, uint8_t* data, uint32_t len, adb_res_t* res)
+{
+    struct adb_message __msg = { 0 };
+
+    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_STLS, type, version, 0, "");
+
+#ifdef __DEBUG
+    printf("ADB STLS\n");
+#endif
+
+    return __handle_request(dev, &__msg, data, len, res);
+}
