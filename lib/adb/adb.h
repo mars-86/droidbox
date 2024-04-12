@@ -49,4 +49,6 @@ int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint8_t* data
 
 int adb_open(adb_dev_t* dev, uint32_t local_id, const char* destination, uint8_t* data, uint32_t len, adb_res_t* res);
 
+int adb_ready(adb_dev_t* dev, uint32_t local_id, uint32_t remote_id, uint8_t* data, uint32_t len, adb_res_t* res);
+
 #endif // __ANDROID_DEBUG_BRIDGE_INCLUDED_H__
