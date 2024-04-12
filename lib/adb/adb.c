@@ -179,3 +179,16 @@ int adb_write(adb_dev_t* dev, uint32_t local_id, uint32_t remote_id, const char*
 
     return __handle_request(dev, &__msg, data, len, res);
 }
+
+int adb_close(adb_dev_t* dev, uint32_t local_id, uint32_t remote_id, uint8_t* data, uint32_t len, adb_res_t* res)
+{
+    struct adb_message __msg = { 0 };
+
+    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_CLSE, local_id, remote_id, 0, NULL);
+
+#ifdef __DEBUG
+    printf("ADB WRITE\n");
+#endif
+
+    return __handle_request(dev, &__msg, data, len, res);
+}
