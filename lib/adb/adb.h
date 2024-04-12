@@ -43,4 +43,6 @@ typedef struct adb_res adb_res_t;
 
 int adb_connect(adb_dev_t* dev, uint32_t version, uint32_t maxdata, const char* system_id, uint8_t* data, uint32_t len, adb_res_t* res);
 
+int adb_stls(adb_dev_t* dev, uint32_t type, uint32_t version, uint8_t* data, uint32_t len, adb_res_t* res);
+
 #endif // __ANDROID_DEBUG_BRIDGE_INCLUDED_H__
