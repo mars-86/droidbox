@@ -1,3 +1,4 @@
+#include "lib/adb/adb.h"
 #include "ptp/error.h"
 #include "ptp/object.h"
 #include "ptp/ptp.h"
@@ -18,7 +19,7 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define DEVICE "026"
+#define DEVICE "057"
 
 int main(int argc, char* argv[])
 {
@@ -43,9 +44,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // usb_dump_device(fd, stdout);
+    usb_dump_device(fd, stdout);
 
-    unsigned short iface = 0x00;
+    unsigned short iface = 0x03;
     char dname[256];
 
     if (usb_get_driver(fd, iface, dname, 256) != 0)
@@ -64,6 +65,8 @@ int main(int argc, char* argv[])
             perror("ioctl");
         */
     }
+    if (usb_detach_interface(fd, iface) != 0)
+        perror("ioctl");
 
     if (usb_claim_interface(fd, iface) != 0)
         perror("ioctl");
@@ -85,85 +88,86 @@ int main(int argc, char* argv[])
 
     ptp_res_t devres;
     int ret;
-
-    ret = ptp_open_session(&ptpdev, 0x1234, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    ret = ptp_get_device_info(&ptpdev, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_storage_id(&ptpdev, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_storage_info(&ptpdev, 0x00010001, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_num_objects(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_UNUSED, PTP_OBJECT_ASSOCIATION_ROOT, &devres, &rparams);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    printf("%d\n", rparams.Parameter1);
-    printf("%d\n", rparams.Parameter2);
-    printf("%d\n", rparams.Parameter3);
-
-    memset(response_buffer, 0, 2048);
-    ret = ptp_get_object_handles(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_HANDLES_UNUSED, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_object_info(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_object(&ptpdev, 0x00000019, response_buffer, 2048, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    printf("GET_OBJ\n");
-    for (int i = 0; i < devres.length; ++i)
-        printf("%.2X", response_buffer[i]);
-    printf("\n");
-
-    ret = ptp_get_thumb(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
-
-    if (!ret && devres.code == PTP_RESPONSE_OK) {
-        for (int i = 0; i < devres.length; ++i)
-            printf("%.2X", response_buffer[i]);
-        printf("\n");
-    } else {
+    /*
+        ret = ptp_open_session(&ptpdev, 0x1234, &devres);
         printf("%s\n", ptp_get_error(devres.code));
-    }
 
-    ret = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &devres, &rparams);
+                ret = ptp_get_device_info(&ptpdev, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
 
-    if (!ret && devres.code == PTP_RESPONSE_OK) {
-        printf("%d\n", rparams.Parameter1);
-        printf("%d\n", rparams.Parameter2);
-        printf("%d\n", rparams.Parameter3);
-    } else {
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_storage_id(&ptpdev, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_storage_info(&ptpdev, 0x00010001, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_num_objects(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_UNUSED, PTP_OBJECT_ASSOCIATION_ROOT, &devres, &rparams);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                printf("%d\n", rparams.Parameter1);
+                printf("%d\n", rparams.Parameter2);
+                printf("%d\n", rparams.Parameter3);
+
+                memset(response_buffer, 0, 2048);
+                ret = ptp_get_object_handles(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_HANDLES_UNUSED, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_object_info(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_object(&ptpdev, 0x00000019, response_buffer, 2048, &devres);
+                printf("%s\n", ptp_get_error(devres.code));
+
+                printf("GET_OBJ\n");
+                for (int i = 0; i < devres.length; ++i)
+                    printf("%.2X", response_buffer[i]);
+                printf("\n");
+
+                ret = ptp_get_thumb(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
+
+                if (!ret && devres.code == PTP_RESPONSE_OK) {
+                    for (int i = 0; i < devres.length; ++i)
+                        printf("%.2X", response_buffer[i]);
+                    printf("\n");
+                } else {
+                    printf("%s\n", ptp_get_error(devres.code));
+                }
+
+                ret = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &devres, &rparams);
+
+                if (!ret && devres.code == PTP_RESPONSE_OK) {
+                    printf("%d\n", rparams.Parameter1);
+                    printf("%d\n", rparams.Parameter2);
+                    printf("%d\n", rparams.Parameter3);
+                } else {
+                    printf("%s\n", ptp_get_error(devres.code));
+                }
+
+        ret = ptp_close_session(&ptpdev, &devres);
         printf("%s\n", ptp_get_error(devres.code));
-    }
 
-    ret = ptp_close_session(&ptpdev, &devres);
-    printf("%s\n", ptp_get_error(devres.code));
-
-    printf("%d\n", ret);
+        printf("%d\n", ret);
+     */
 
     if (usb_release_interface(fd, iface) != 0)
         perror("ioctl");
