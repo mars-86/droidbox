@@ -41,11 +41,18 @@ typedef struct adb_res adb_res_t;
 #define ADB_COMMAND_A_WRTE 0x45545257
 #define ADB_COMMAND_A_STLS 0x534C5453
 
+#define ADB_AUTH_TYPE_TOKEN 1
+#define ADB_AUTH_TYPE_SIGNATURE 2
+#define ADB_AUTH_TYPE_RSAPUBLICKEY 3
+
+#define ADB_STLS_VERSION_MIN 0x01000000
+#define ADB_STLS_VERSION 0x01000000
+
 int adb_connect(adb_dev_t* dev, uint32_t version, uint32_t maxdata, const char* system_id, uint8_t* data, uint32_t len, adb_res_t* res);
 
 int adb_stls(adb_dev_t* dev, uint32_t type, uint32_t version, uint8_t* data, uint32_t len, adb_res_t* res);
 
-int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint8_t* data, uint32_t len, adb_res_t* res);
+int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint32_t auth_len, uint8_t* data, uint32_t len, adb_res_t* res);
 
 int adb_open(adb_dev_t* dev, uint32_t local_id, const char* destination, uint8_t* data, uint32_t len, adb_res_t* res);
 
