@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
         .out_endp = 0x03
     };
 
-    FILE* fpub = fopen("/home/mars/adbkey.pub", "r");
+    FILE* fpub = fopen("~/adbkey.pub", "r");
     char pubk[2048];
 
     while (!feof(fpub))
@@ -283,7 +283,7 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
-    FILE* stream = fopen("/home/mars/adbstream", "wb+");
+    FILE* stream = fopen("~/adbstream", "wb+");
 
     if (!stream)
         perror("fopen");
