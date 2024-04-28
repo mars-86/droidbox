@@ -9,7 +9,14 @@
 #include <fcntl.h>
 #include <linux/usb/ch9.h>
 #include <linux/usbdevice_fs.h>
+#include <openssl/bio.h>
+#include <openssl/cms.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +26,117 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define DEVICE "057"
+#define DEVICE "094"
+
+extern const unsigned char rsakey_ex[];
+
+static EVP_PKEY* load_private_key(const char* file)
+{
+    BIO* keybio;
+    if ((keybio = BIO_new_file(file, "r")) == NULL) {
+        ERR_print_errors_fp(stderr);
+        exit(0);
+    }
+    EVP_PKEY* pkey = PEM_read_bio_PrivateKey(keybio, NULL, NULL, NULL);
+    if (pkey == NULL) {
+        ERR_print_errors_fp(stderr);
+        exit(0);
+    }
+    return pkey;
+}
+
+static int sign_msg(const char* prk_path, unsigned char* msg, int len, unsigned char* sign, size_t* signlen)
+{
+    int ret = 0;
+    EVP_PKEY_CTX* ctx = NULL;
+    /* md is a SHA-256 digest in this example. */
+    unsigned char *md = msg, *sig = NULL;
+    size_t mdlen = 32, siglen;
+    EVP_PKEY* signing_key = NULL;
+
+    /*
+     * NB: assumes signing_key and md are set up before the next
+     * step. signing_key must be an RSA private key and md must
+     * point to the SHA-256 digest to be signed.
+     */
+
+    signing_key = load_private_key(prk_path);
+
+    if (!signing_key) {
+        ERR_print_errors_fp(stderr);
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE CONTEXT\n");
+
+    ctx = EVP_PKEY_CTX_new(signing_key, NULL /* no engine */);
+    // ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL /* no engine */);
+    if (!ctx) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE INIT SIGN\n");
+
+    if (EVP_PKEY_sign_init(ctx) <= 0) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE RSA PADDING\n");
+
+    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE SIGN MD\n");
+
+    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE SIGN\n");
+
+    /* Determine buffer length */
+    if (EVP_PKEY_sign(ctx, NULL, &siglen, md, mdlen) <= 0) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE MALLOC SIGN: %ld\n", siglen);
+
+    sig = OPENSSL_malloc(siglen);
+
+    if (!sig) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    printf("CREATE SIGN\n");
+
+    if (EVP_PKEY_sign(ctx, sig, &siglen, md, mdlen) <= 0) {
+        ret = ERR_get_error();
+        goto done;
+    }
+
+    if (sign)
+        memcpy(sign, sig, siglen);
+    if (signlen)
+        *signlen = siglen;
+
+done:
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
+    if (sig)
+        OPENSSL_free(sig);
+    if (signing_key)
+        EVP_PKEY_free(signing_key);
+
+    return ret;
+}
 
 int main(int argc, char* argv[])
 {
@@ -71,107 +188,133 @@ int main(int argc, char* argv[])
     if (usb_claim_interface(fd, iface) != 0)
         perror("ioctl");
 
-    struct timeval tv;
-
-    gettimeofday(&tv, 0);
-    tv.tv_sec = tv.tv_sec + 3;
-
-    srand(time(NULL));
-
-    ptp_dev_t ptpdev = {
+    adb_dev_t adbdev = {
         .fd = fd,
-        .endp = 0x01
+        .in_endp = 0x05,
+        .out_endp = 0x03
     };
 
-    unsigned char response_buffer[2048];
-    ptp_res_params_t rparams = { 0 };
+    FILE* fpub = fopen("~/adbkey.pub", "r");
+    char pubk[2048];
 
-    ptp_res_t devres;
-    int ret;
-    /*
-        ret = ptp_open_session(&ptpdev, 0x1234, &devres);
-        printf("%s\n", ptp_get_error(devres.code));
+    while (!feof(fpub))
+        fread(pubk, 2048, 1, fpub);
 
-                ret = ptp_get_device_info(&ptpdev, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    fclose(fpub);
 
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    adb_res_t adbres = { 0 };
+    unsigned char adb_res_buff[2048];
+    int ret, i = 0;
+    unsigned char signature[2048];
+    size_t signature_len = 0;
 
-                ret = ptp_get_storage_id(&ptpdev, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    char token[20];
 
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    uint8_t n64[8];
 
-                ret = ptp_get_storage_info(&ptpdev, 0x00010001, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    printf("%ld\n", sizeof(uint64_t));
+    uint32_t num[2] = { (1 << 31), (1 << 31) };
+    uint32_t num32 = (1 << 31);
+    uint64_t num64 = 0xffffffffffffffff;
 
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    memcpy(n64, &num64, 8);
 
-                ret = ptp_get_num_objects(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_UNUSED, PTP_OBJECT_ASSOCIATION_ROOT, &devres, &rparams);
-                printf("%s\n", ptp_get_error(devres.code));
+    printf("NUM64: %lu\n", num64);
+    long n;
+    printf("NUM: ");
+    for (int i = 0; i < 8; ++i)
+        printf("%d", n64[i]);
+    printf("%s\n", n64);
+    printf("\n");
 
-                printf("%d\n", rparams.Parameter1);
-                printf("%d\n", rparams.Parameter2);
-                printf("%d\n", rparams.Parameter3);
+    printf("%u\n", (uint32_t)(2 << 30));
+    printf("%X\n", (uint32_t)(2 << 30));
 
-                memset(response_buffer, 0, 2048);
-                ret = ptp_get_object_handles(&ptpdev, 0x00010001, PTP_OBJECT_FORMAT_CODE_HANDLES_UNUSED, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    printf("N0INV: %d\n", ((uint32_t)(0x77c12ca7 % ((unsigned long)2 << 32))));
+    printf("N0INV: %X\n", ((uint32_t)(0x77c12ca7 % ((unsigned long)2 << 32))));
 
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    ret = adb_connect(&adbdev, ADB_PROTO_VERSION, 0x1000, "host::", adb_res_buff, 2048, &adbres);
 
-                ret = ptp_get_object_info(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    memcpy(token, adb_res_buff + sizeof(struct message), 20);
 
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    printf("%d\n", ret);
 
-                ret = ptp_get_object(&ptpdev, 0x00000019, response_buffer, 2048, &devres);
-                printf("%s\n", ptp_get_error(devres.code));
+    struct message* r = (struct message*)adb_res_buff;
 
-                printf("GET_OBJ\n");
-                for (int i = 0; i < devres.length; ++i)
-                    printf("%.2X", response_buffer[i]);
-                printf("\n");
+    printf("CMD: %X\n", r->command);
+    printf("ARG0: %X\n", r->arg0);
+    printf("ARG1: %X\n", r->arg1);
+    printf("DLEN: %X\n", r->data_length);
+    printf("DCRC: %X\n", r->data_crc32);
+    printf("MAGI: %X\n", r->magic);
 
-                ret = ptp_get_thumb(&ptpdev, 0x00000001, response_buffer, 2048, &devres);
+    if (ret == 0) {
+        for (int i = 0; i < 20; ++i)
+            printf("%.2X", token[i]);
+        printf("\n");
+        for (int i = 0; i < 20; ++i)
+            printf("%c", token[i]);
+        printf("\n");
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%.2X", adb_res_buff[i]);
+        printf("\n");
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%c", adb_res_buff[i]);
+        printf("\n");
+    }
 
-                if (!ret && devres.code == PTP_RESPONSE_OK) {
-                    for (int i = 0; i < devres.length; ++i)
-                        printf("%.2X", response_buffer[i]);
-                    printf("\n");
-                } else {
-                    printf("%s\n", ptp_get_error(devres.code));
-                }
+    if (ret < 0)
+        perror("ioctl");
 
-                ret = ptp_send_object_info(&ptpdev, 0x00010001, PTP_OBJECT_ASSOCIATION_HANDLES_ROOT, NULL, 66, &devres, &rparams);
+    printf("%ld\n", strlen(token));
 
-                if (!ret && devres.code == PTP_RESPONSE_OK) {
-                    printf("%d\n", rparams.Parameter1);
-                    printf("%d\n", rparams.Parameter2);
-                    printf("%d\n", rparams.Parameter3);
-                } else {
-                    printf("%s\n", ptp_get_error(devres.code));
-                }
+    // printf("RSA KEY LEN: %ld\n", strlen(rsakey));
+    // ret = adb_auth(&adbdev, 3, rsakey, adb_res_buff, 2048, &adbres);
+    ++i;
 
-        ret = ptp_close_session(&ptpdev, &devres);
-        printf("%s\n", ptp_get_error(devres.code));
+    ret = adb_auth(&adbdev, ADB_AUTH_TYPE_RSAPUBLICKEY, (const char*)rsakey_ex, 524, adb_res_buff, 2048, &adbres);
 
-        printf("%d\n", ret);
-     */
+    if (ret == 0) {
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%.2X", adb_res_buff[i]);
+        printf("\n");
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%c", adb_res_buff[i]);
+        printf("\n");
+    }
+
+    FILE* stream = fopen("~/adbstream", "wb+");
+
+    if (!stream)
+        perror("fopen");
+
+    int tty = open("/dev/tty1", O_RDWR);
+
+    if (tty == -1) {
+        perror("open");
+    }
+
+    ret = adb_open(&adbdev, tty, "jdwp:1234", adb_res_buff, 2048, &adbres);
+    // ret = adb_sync(&adbdev, 0xF, "shell", adb_res_buff, 2048, &adbres);
+
+    // ret = adb_stls(&adbdev, 1, ADB_STLS_VERSION, adb_res_buff, 2048, &adbres);
+
+    // ret = adb_write(&adbdev, 1, 1, "sync:", adb_res_buff, 2048, &adbres);
+
+    if (ret == 0) {
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%.2X", adb_res_buff[i]);
+        printf("\n");
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%c", adb_res_buff[i]);
+        printf("\n");
+    }
 
     if (usb_release_interface(fd, iface) != 0)
         perror("ioctl");
 
+    fclose(stream);
+    close(tty);
     close(fd);
 
     return 0;

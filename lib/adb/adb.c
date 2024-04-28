@@ -143,9 +143,9 @@ static int __send_request(adb_dev_t* dev, const uint8_t* req, uint32_t len, uint
             return -1;
         // TODO: remove this
         printf("SENT BYTES: %d\n", __sent_bytes);
-        if (__sent_bytes == 451) {
-            return 0;
-        }
+        // if (__sent_bytes == 451) {
+        //    return 0;
+        // }
     }
 
     uint8_t __rbuffer[512];
@@ -209,7 +209,6 @@ static int __handle_request(adb_dev_t* dev, void* msg, uint8_t* data, uint32_t l
         // for (int i = 0; i < __len; i++)
         //    *(__mstream + HEADER_LEN + i) = *(__msg->payload + (__len - 1) - i);
         memcpy(__mstream + HEADER_LEN, __msg->payload, __msg->header.data_length);
-        *(__mstream + __bytes_len) = 0x00;
     }
 
     int __ret = __send_request(dev, __mstream, __bytes_len, __rstream, res);
@@ -257,11 +256,12 @@ int adb_stls(adb_dev_t* dev, uint32_t type, uint32_t version, uint8_t* data, uin
     return __handle_request(dev, &__msg, data, len, res);
 }
 
-int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint8_t* data, uint32_t len, adb_res_t* res)
+int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint32_t auth_len, uint8_t* data, uint32_t len, adb_res_t* res)
 {
     struct adb_message __msg = { 0 };
 
-    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_AUTH, type, 0, strlen(auth_data), auth_data);
+    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_AUTH, type, 0, auth_len, auth_data);
+    // ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_AUTH, type, 0, 256, auth_data);
 
 #ifdef __DEBUG
     printf("ADB AUTH\n");
@@ -273,8 +273,9 @@ int adb_auth(adb_dev_t* dev, uint32_t type, const char* auth_data, uint8_t* data
 int adb_open(adb_dev_t* dev, uint32_t local_id, const char* destination, uint8_t* data, uint32_t len, adb_res_t* res)
 {
     struct adb_message __msg = { 0 };
+    uint32_t __data_len = strlen(destination);
 
-    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_OPEN, local_id, 0, strlen(destination), destination);
+    ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_OPEN, local_id, 0, __data_len, destination);
 
 #ifdef __DEBUG
     printf("ADB OPEN\n");
