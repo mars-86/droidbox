@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
-    ret = adb_open(&adbdev, 1, "framebuffer: ", adb_res_buff, 2048, &adbres);
+    ret = adb_open(&adbdev, 4, "framebuffer: ", adb_res_buff, 2048, &adbres);
 
     if (ret == 0) {
         for (int i = sizeof(struct message); i < adbres.length; ++i)
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
 
     if (adbres.code == ADB_COMMAND_A_OKAY) {
         do {
-            ret = adb_ready(&adbdev, 1, 3, adb_res_buff, 2048, &adbres);
+            ret = adb_ready(&adbdev, 4, 3, adb_res_buff, 2048, &adbres);
             if (ret == 0) {
                 for (int i = sizeof(struct message); i < adbres.length; ++i)
                     printf("%.2X", adb_res_buff[i]);
