@@ -1,5 +1,5 @@
 #include "lib/adb/adb.h"
-#include "usb.h"
+#include "lib/usb/usb.h"
 #include <asm-generic/errno-base.h>
 #include <asm/byteorder.h>
 #include <bits/types/clockid_t.h>

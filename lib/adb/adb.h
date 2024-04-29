@@ -1,7 +1,7 @@
 #ifndef __ANDROID_DEBUG_BRIDGE_INCLUDED_H__
 #define __ANDROID_DEBUG_BRIDGE_INCLUDED_H__
 
-#include "../../usb.h"
+#include "../usb/usb.h"
 #include <stdint.h>
 
 struct message {
