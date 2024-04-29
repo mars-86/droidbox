@@ -1,7 +1,7 @@
 #ifndef __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
 #define __PICTURE_TRANSFER_PROTOCOL_INCLUDED_H__
 
-#include "../usb.h"
+#include "../usb/usb.h"
 #include "association.h"
 #include "dataset.h"
 #include "error.h"
