@@ -1,7 +1,4 @@
 #include "lib/adb/adb.h"
-#include "ptp/error.h"
-#include "ptp/object.h"
-#include "ptp/ptp.h"
 #include "usb.h"
 #include <asm-generic/errno-base.h>
 #include <asm/byteorder.h>
