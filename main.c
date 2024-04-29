@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define DEVICE "094"
+#define DEVICE "096"
 
 extern const unsigned char rsakey_ex[];
 
@@ -193,15 +193,15 @@ int main(int argc, char* argv[])
         .in_endp = 0x05,
         .out_endp = 0x03
     };
+    /*
+        FILE* fpub = fopen("~/adbkey.pub", "r");
+        char pubk[2048];
 
-    FILE* fpub = fopen("~/adbkey.pub", "r");
-    char pubk[2048];
+        while (!feof(fpub))
+            fread(pubk, 2048, 1, fpub);
 
-    while (!feof(fpub))
-        fread(pubk, 2048, 1, fpub);
-
-    fclose(fpub);
-
+        fclose(fpub);
+    */
     adb_res_t adbres = { 0 };
     unsigned char adb_res_buff[2048];
     int ret, i = 0;
@@ -283,18 +283,32 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
+    /*
     FILE* stream = fopen("~/adbstream", "wb+");
 
     if (!stream)
         perror("fopen");
+    */
 
-    int tty = open("/dev/tty1", O_RDWR);
+    int tty = open("/dev/ptmx", O_RDWR);
 
     if (tty == -1) {
         perror("open");
     }
 
-    ret = adb_open(&adbdev, tty, "jdwp:1234", adb_res_buff, 2048, &adbres);
+    // do {
+    // ret = adb_ready(&adbdev, fd, 0, adb_res_buff, 2048, &adbres);
+
+    if (ret == 0) {
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%.2X", adb_res_buff[i]);
+        printf("\n");
+        for (int i = sizeof(struct message); i < adbres.length; ++i)
+            printf("%c", adb_res_buff[i]);
+        printf("\n");
+    }
+
+    ret = adb_open(&adbdev, tty, "framebuffer: ", adb_res_buff, 2048, &adbres);
     // ret = adb_sync(&adbdev, 0xF, "shell", adb_res_buff, 2048, &adbres);
 
     // ret = adb_stls(&adbdev, 1, ADB_STLS_VERSION, adb_res_buff, 2048, &adbres);
@@ -310,10 +324,26 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
+    if (adbres.code == ADB_COMMAND_A_OKAY) {
+        do {
+            ret = adb_ready(&adbdev, tty, 3, adb_res_buff, 2048, &adbres);
+            if (ret == 0) {
+                for (int i = sizeof(struct message); i < adbres.length; ++i)
+                    printf("%.2X", adb_res_buff[i]);
+                printf("\n");
+                for (int i = sizeof(struct message); i < adbres.length; ++i)
+                    printf("%c", adb_res_buff[i]);
+                printf("\n");
+            }
+        } while (adbres.code != ADB_COMMAND_A_CLSE);
+    }
+    // sleep(1);
+    // } while (adbres.code == ADB_COMMAND_A_CLSE);
+
     if (usb_release_interface(fd, iface) != 0)
         perror("ioctl");
 
-    fclose(stream);
+    // fclose(stream);
     close(tty);
     close(fd);
 

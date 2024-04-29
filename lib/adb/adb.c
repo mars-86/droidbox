@@ -122,6 +122,19 @@ static int __send_request(adb_dev_t* dev, const uint8_t* req, uint32_t len, uint
 #ifdef __DEBUG
     printf("SENT BYTES\n");
 #endif
+
+    /*
+    if (ADB_COMMAND_MASK(req) == ADB_COMMAND_A_OPEN) {
+        printf("OPEN MSG\n");
+        struct adb_message __msg = { 0 };
+
+        ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_OKAY, 1, 0, 0, "");
+
+        if ((__sent_bytes = usb_bulk_send(dev->fd, dev->out_endp, (void*)&__msg, HEADER_LEN)) < 0)
+            return -1;
+        printf("SENT BYTES: %d\n", __sent_bytes);
+    }
+*/
     printf("SENDING HEADER\n");
     for (int i = 0; i < HEADER_LEN; ++i)
         printf("%.2X", req[i]);
@@ -230,8 +243,6 @@ static int __handle_request(adb_dev_t* dev, void* msg, uint8_t* data, uint32_t l
 
 int adb_connect(adb_dev_t* dev, uint32_t version, uint32_t maxdata, const char* system_id, uint8_t* data, uint32_t len, adb_res_t* res)
 {
-    //    crc16_2((uint8_t*)system_id, strlen(system_id));
-    //    return 0;
     struct adb_message __msg = { 0 };
 
     ADB_SET_MESSAGE(__msg, ADB_COMMAND_A_CNXN, version, maxdata, strlen(system_id), system_id);
