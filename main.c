@@ -190,45 +190,12 @@ int main(int argc, char* argv[])
         .in_endp = 0x05,
         .out_endp = 0x03
     };
-    /*
-        FILE* fpub = fopen("~/adbkey.pub", "r");
-        char pubk[2048];
 
-        while (!feof(fpub))
-            fread(pubk, 2048, 1, fpub);
-
-        fclose(fpub);
-    */
     adb_res_t adbres = { 0 };
     unsigned char adb_res_buff[2048];
-    int ret, i = 0;
-    unsigned char signature[2048];
-    size_t signature_len = 0;
+    int ret;
 
     char token[20];
-
-    uint8_t n64[8];
-
-    printf("%ld\n", sizeof(uint64_t));
-    uint32_t num[2] = { (1 << 31), (1 << 31) };
-    uint32_t num32 = (1 << 31);
-    uint64_t num64 = 0xffffffffffffffff;
-
-    memcpy(n64, &num64, 8);
-
-    printf("NUM64: %lu\n", num64);
-    long n;
-    printf("NUM: ");
-    for (int i = 0; i < 8; ++i)
-        printf("%d", n64[i]);
-    printf("%s\n", n64);
-    printf("\n");
-
-    printf("%u\n", (uint32_t)(2 << 30));
-    printf("%X\n", (uint32_t)(2 << 30));
-
-    printf("N0INV: %d\n", ((uint32_t)(0x77c12ca7 % ((unsigned long)2 << 32))));
-    printf("N0INV: %X\n", ((uint32_t)(0x77c12ca7 % ((unsigned long)2 << 32))));
 
     ret = adb_connect(&adbdev, ADB_PROTO_VERSION, 0x1000, "host::", adb_res_buff, 2048, &adbres);
 
@@ -265,10 +232,6 @@ int main(int argc, char* argv[])
 
     printf("%ld\n", strlen(token));
 
-    // printf("RSA KEY LEN: %ld\n", strlen(rsakey));
-    // ret = adb_auth(&adbdev, 3, rsakey, adb_res_buff, 2048, &adbres);
-    ++i;
-
     ret = adb_auth(&adbdev, ADB_AUTH_TYPE_RSAPUBLICKEY, (const char*)rsakey_ex, 524, adb_res_buff, 2048, &adbres);
 
     if (ret == 0) {
@@ -280,22 +243,6 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
-    /*
-    FILE* stream = fopen("~/adbstream", "wb+");
-
-    if (!stream)
-        perror("fopen");
-    */
-
-    int tty = open("/dev/ptmx", O_RDWR);
-
-    if (tty == -1) {
-        perror("open");
-    }
-
-    // do {
-    // ret = adb_ready(&adbdev, fd, 0, adb_res_buff, 2048, &adbres);
-
     if (ret == 0) {
         for (int i = sizeof(struct message); i < adbres.length; ++i)
             printf("%.2X", adb_res_buff[i]);
@@ -305,12 +252,7 @@ int main(int argc, char* argv[])
         printf("\n");
     }
 
-    ret = adb_open(&adbdev, tty, "framebuffer: ", adb_res_buff, 2048, &adbres);
-    // ret = adb_sync(&adbdev, 0xF, "shell", adb_res_buff, 2048, &adbres);
-
-    // ret = adb_stls(&adbdev, 1, ADB_STLS_VERSION, adb_res_buff, 2048, &adbres);
-
-    // ret = adb_write(&adbdev, 1, 1, "sync:", adb_res_buff, 2048, &adbres);
+    ret = adb_open(&adbdev, 1, "framebuffer: ", adb_res_buff, 2048, &adbres);
 
     if (ret == 0) {
         for (int i = sizeof(struct message); i < adbres.length; ++i)
@@ -323,7 +265,7 @@ int main(int argc, char* argv[])
 
     if (adbres.code == ADB_COMMAND_A_OKAY) {
         do {
-            ret = adb_ready(&adbdev, tty, 3, adb_res_buff, 2048, &adbres);
+            ret = adb_ready(&adbdev, 1, 3, adb_res_buff, 2048, &adbres);
             if (ret == 0) {
                 for (int i = sizeof(struct message); i < adbres.length; ++i)
                     printf("%.2X", adb_res_buff[i]);
@@ -334,14 +276,10 @@ int main(int argc, char* argv[])
             }
         } while (adbres.code != ADB_COMMAND_A_CLSE);
     }
-    // sleep(1);
-    // } while (adbres.code == ADB_COMMAND_A_CLSE);
 
     if (usb_release_interface(fd, iface) != 0)
         perror("ioctl");
 
-    // fclose(stream);
-    close(tty);
     close(fd);
 
     return 0;
