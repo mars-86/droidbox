@@ -1,22 +1,25 @@
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include "daemon.h"
+#include <stdio.h>
 
-#define DEFAULT_PORT 5037
+#define PATH "/tmp/droidbox.sock"
 
-void start_daemon()
+void on_listen(void* usr)
 {
-    int sd = 0, ret = 0;
-    sd = socket(AF_INET, SOCK_STREAM, 0);
+    const char* path = (const char*)usr;
 
-    struct sockaddr_in sin;
+    printf("Daemon listening on %s\n", path);
+}
 
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(DEFAULT_PORT);
-    sin.sin_addr.s_addr = INADDR_ANY;
+int daemon_init(int argc, char* argv[])
+{
+    local_server_t* daemon = server_local_init(NULL);
 
-    socklen_t sinlen = sizeof(struct sockaddr);
-    ret = bind(sd, (struct sockaddr*)&sin, sinlen);
+    if (!daemon)
+        return 1;
 
-    listen(sd, 10);
+    server_local_listen(daemon, PATH, on_listen);
+
+    server_local_destroy(daemon);
+
+    return 0;
 }
