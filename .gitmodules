@@ -1,0 +1,3 @@
+[submodule "lib/networking"]
+	path = lib/networking
+	url = git@github.com:mars-86/networking.git
