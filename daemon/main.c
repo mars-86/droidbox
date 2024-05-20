@@ -2,8 +2,5 @@
 
 int main(int argc, char* argv[])
 {
-    int status;
-    status = daemon_init(argc, argv);
-
-    return status;
+    return daemon_init(argc, argv);
 }
