@@ -23,10 +23,10 @@
 #include <unistd.h>
 
 #define DEV_USB_DIR "/dev/bus/usb"
-#define DEVICE "096"
+#define DEVICE "006"
 
 extern const unsigned char rsakey_ex[];
-
+/*
 static EVP_PKEY* load_private_key(const char* file)
 {
     BIO* keybio;
@@ -41,22 +41,24 @@ static EVP_PKEY* load_private_key(const char* file)
     }
     return pkey;
 }
-
+*/
+/*
 static int sign_msg(const char* prk_path, unsigned char* msg, int len, unsigned char* sign, size_t* signlen)
 {
     int ret = 0;
     EVP_PKEY_CTX* ctx = NULL;
-    /* md is a SHA-256 digest in this example. */
-    unsigned char *md = msg, *sig = NULL;
+*/
+/* md is a SHA-256 digest in this example. */
+/*    unsigned char *md = msg, *sig = NULL;
     size_t mdlen = 32, siglen;
     EVP_PKEY* signing_key = NULL;
-
-    /*
-     * NB: assumes signing_key and md are set up before the next
-     * step. signing_key must be an RSA private key and md must
-     * point to the SHA-256 digest to be signed.
-     */
-
+*/
+/*
+ * NB: assumes signing_key and md are set up before the next
+ * step. signing_key must be an RSA private key and md must
+ * point to the SHA-256 digest to be signed.
+ */
+/*
     signing_key = load_private_key(prk_path);
 
     if (!signing_key) {
@@ -67,73 +69,73 @@ static int sign_msg(const char* prk_path, unsigned char* msg, int len, unsigned 
 
     printf("CREATE CONTEXT\n");
 
-    ctx = EVP_PKEY_CTX_new(signing_key, NULL /* no engine */);
-    // ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL /* no engine */);
-    if (!ctx) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE INIT SIGN\n");
-
-    if (EVP_PKEY_sign_init(ctx) <= 0) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE RSA PADDING\n");
-
-    if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE SIGN MD\n");
-
-    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE SIGN\n");
-
-    /* Determine buffer length */
-    if (EVP_PKEY_sign(ctx, NULL, &siglen, md, mdlen) <= 0) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE MALLOC SIGN: %ld\n", siglen);
-
-    sig = OPENSSL_malloc(siglen);
-
-    if (!sig) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    printf("CREATE SIGN\n");
-
-    if (EVP_PKEY_sign(ctx, sig, &siglen, md, mdlen) <= 0) {
-        ret = ERR_get_error();
-        goto done;
-    }
-
-    if (sign)
-        memcpy(sign, sig, siglen);
-    if (signlen)
-        *signlen = siglen;
-
-done:
-    if (ctx)
-        EVP_PKEY_CTX_free(ctx);
-    if (sig)
-        OPENSSL_free(sig);
-    if (signing_key)
-        EVP_PKEY_free(signing_key);
-
-    return ret;
+    ctx = EVP_PKEY_CTX_new(signing_key, NULL); // no engine
+// ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL); // no engine
+if (!ctx) {
+    ret = ERR_get_error();
+    goto done;
 }
+
+printf("CREATE INIT SIGN\n");
+
+if (EVP_PKEY_sign_init(ctx) <= 0) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+printf("CREATE RSA PADDING\n");
+
+if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING) <= 0) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+printf("CREATE SIGN MD\n");
+
+if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+printf("CREATE SIGN\n");
+
+// Determine buffer length
+if (EVP_PKEY_sign(ctx, NULL, &siglen, md, mdlen) <= 0) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+printf("CREATE MALLOC SIGN: %ld\n", siglen);
+
+sig = OPENSSL_malloc(siglen);
+
+if (!sig) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+printf("CREATE SIGN\n");
+
+if (EVP_PKEY_sign(ctx, sig, &siglen, md, mdlen) <= 0) {
+    ret = ERR_get_error();
+    goto done;
+}
+
+if (sign)
+    memcpy(sign, sig, siglen);
+if (signlen)
+    *signlen = siglen;
+
+done : if (ctx)
+           EVP_PKEY_CTX_free(ctx);
+if (sig)
+    OPENSSL_free(sig);
+if (signing_key)
+    EVP_PKEY_free(signing_key);
+
+return ret;
+}
+*/
 
 int main(int argc, char* argv[])
 {
