@@ -121,7 +121,7 @@ typedef struct ptp_res ptp_res_t;
  * OperationRequest dataset shall be set to 0x00000000.
  */
 
-int ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
+int ptp_get_device_info(ptp_dev_t* dev, uint32_t session_id, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * OpenSession
