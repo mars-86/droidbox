@@ -7,7 +7,6 @@
 #include "error.h"
 #include "object.h"
 #include "storage.h"
-#include <cstdint>
 #include <stdint.h>
 
 struct ptp_res_params {
@@ -20,7 +19,7 @@ typedef struct ptp_res_params ptp_res_params_t;
 
 struct ptp_dev {
     usb_dev_t fd;
-    int endp;
+    uint8_t endp_in;
     uint16_t endp_in_max_pack_size;
     uint8_t endp_out;
     uint16_t endp_out_max_pack_size;
@@ -121,7 +120,7 @@ typedef struct ptp_res ptp_res_t;
  * OperationRequest dataset shall be set to 0x00000000.
  */
 
-int ptp_get_device_info(ptp_dev_t* dev, uint32_t session_id, uint8_t* data, uint32_t len, ptp_res_t* res);
+int ptp_get_device_info(ptp_dev_t* dev, uint8_t* data, uint32_t len, ptp_res_t* res);
 
 /*
  * OpenSession
