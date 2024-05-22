@@ -7,6 +7,7 @@
 #include "error.h"
 #include "object.h"
 #include "storage.h"
+#include <cstdint>
 #include <stdint.h>
 
 struct ptp_res_params {
@@ -20,6 +21,11 @@ typedef struct ptp_res_params ptp_res_params_t;
 struct ptp_dev {
     usb_dev_t fd;
     int endp;
+    uint16_t endp_in_max_pack_size;
+    uint8_t endp_out;
+    uint16_t endp_out_max_pack_size;
+    uint8_t endp_int;
+    uint16_t endp_int_max_pack_size;
 };
 
 typedef struct ptp_dev ptp_dev_t;

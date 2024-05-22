@@ -1,7 +1,9 @@
 #include "core.h"
+#include "product.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/usb/ch9.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,72 +11,103 @@
 
 #define BUFF_MAX_SIZE 4096
 #define STRING_MAX_SIZE 128
+#define LANG_ID 0x0409
+
+struct __device_info {
+    unsigned short product_id;
+    unsigned short vendor_id;
+    char manufacturer[STRING_MAX_SIZE];
+    char product[STRING_MAX_SIZE];
+    char serial_number[STRING_MAX_SIZE];
+};
+
+struct __ptp_iface {
+    unsigned short number;
+    unsigned short endp_in;
+    unsigned short endp_in_pack_size;
+    unsigned short endp_out;
+    unsigned short endp_out_pack_size;
+};
 
 static void __parse_stream(void* dest, unsigned char* src, size_t n)
 {
     memcpy(dest, src, n);
 }
 
-static void __print_device_descriptor(FILE* output, int fd, unsigned short langid, struct usb_device_descriptor* udd)
-{
-    char __manufacturer[STRING_MAX_SIZE], __product[STRING_MAX_SIZE], __serial_number[STRING_MAX_SIZE];
-    usb_get_string(fd, udd->iManufacturer, langid, __manufacturer);
-    usb_get_string(fd, udd->iProduct, langid, __product);
-    usb_get_string(fd, udd->iSerialNumber, langid, __serial_number);
-
-    fprintf(output,
-        "Length: %d\n"
-        "Descriptor Type (%.2X): Device\n"
-        "BCD USB: %.4X\n"
-        "Device Class: %.2X\n"
-        "Device Sub Class: %.2X\n"
-        "Device Protocol: %.2X\n"
-        "Max Packet Size: %.2X\n"
-        "Vendor ID: %.4X\n"
-        "Product ID: %.4X\n"
-        "BCD Device: %.4X\n"
-        "Manufacturer (%.2X): %s\n"
-        "Product (%.2X): %s\n"
-        "Serial Number (%.2X): %s\n"
-        "Configurations Number: %.2X\n",
-        udd->bLength,
-        udd->bDescriptorType,
-        udd->bcdUSB,
-        udd->bDeviceClass,
-        udd->bDeviceSubClass,
-        udd->bDeviceProtocol,
-        udd->bMaxPacketSize0,
-        udd->idVendor,
-        udd->idProduct,
-        udd->bcdDevice,
-        udd->iManufacturer,
-        __manufacturer,
-        udd->iProduct,
-        __product,
-        udd->iSerialNumber,
-        __serial_number,
-        udd->bNumConfigurations);
-}
-
-static void __usb_dump_device(int fd, FILE* output)
+static void __usb_interface(int fd, struct usb_interface_descriptor* uid)
 {
     unsigned char buff[BUFF_MAX_SIZE] = { 0 };
-    int rlen;
+    int rlen, i;
 
-    if (usb_get_descriptor(fd, USB_DT_STRING, 0x00, 0x00, buff, &rlen) != 0) {
+    if (usb_get_descriptor(fd, USB_DT_INTERFACE, 0x00, 0x00, buff, &rlen) != 0) {
         perror("ioctl");
         return;
     }
+}
+
+static unsigned short __usb_device(int fd, struct usb_device_descriptor* udd)
+{
+    unsigned char buff[BUFF_MAX_SIZE] = { 0 };
+    int rlen, i;
 
     if (usb_get_descriptor(fd, USB_DT_DEVICE, 0x00, 0x00, buff, &rlen) != 0) {
         perror("ioctl");
-        return;
+        return 0;
     }
 
     struct usb_device_descriptor __udd;
 
     __parse_stream(&__udd, buff, sizeof(struct usb_device_descriptor));
-    __print_device_descriptor(output, fd, 0x0409, &__udd);
+
+    if (udd)
+        memcpy(udd, &__udd, sizeof(struct usb_device_descriptor));
+
+    int __n_config = __udd.bNumConfigurations;
+
+    struct usb_config_descriptor __ucd;
+    struct usb_interface_descriptor __uid;
+    struct usb_endpoint_descriptor __ued;
+    unsigned char __ucd_size = USB_DT_CONFIG_SIZE, __uid_size = USB_DT_INTERFACE_SIZE, __ued_size = USB_DT_ENDPOINT_SIZE;
+    int __is_ptp = 0;
+    for (i = 0; i < __n_config || __is_ptp; ++i) {
+        memset(buff, 0, BUFF_MAX_SIZE);
+        if (usb_get_descriptor(fd, USB_DT_CONFIG, i, 0x00, buff, &rlen) != 0) {
+            perror("ioctl");
+            return 0;
+        }
+
+        __parse_stream(&__ucd, buff, __ucd_size);
+        unsigned short __data_size = __ucd.wTotalLength, offset;
+        for (offset = USB_DT_CONFIG_SIZE; offset < __data_size; offset += *(buff + offset)) {
+            unsigned char dt = *(buff + offset + 1);
+            switch (dt) {
+            case USB_DT_INTERFACE:
+                __parse_stream(&__uid, buff + offset, __uid_size);
+                if (__uid.bInterfaceClass == 0x06)
+                    __is_ptp = 1;
+                break;
+            case USB_DT_ENDPOINT:
+                if (__is_ptp) {
+                    __parse_stream(&__ued, buff + offset, __ued_size);
+                    // __ued.bEndpointAddress
+                }
+                break;
+            case USB_DT_INTERFACE_ASSOCIATION:
+                // __parse_interface_association(output, buff + offset);
+                break;
+            }
+        }
+    }
+
+    return __udd.idProduct;
+}
+
+static void __get_device_info(int fd, struct usb_device_descriptor* udd, struct __device_info* dinfo)
+{
+    dinfo->vendor_id = udd->idVendor;
+    usb_get_string(fd, udd->iManufacturer, LANG_ID, dinfo->manufacturer);
+    usb_get_string(fd, udd->iProduct, LANG_ID, dinfo->product);
+    usb_get_string(fd, udd->iSerialNumber, LANG_ID, dinfo->serial_number);
 }
 
 int scan_ports(const char* path)
@@ -109,7 +142,18 @@ int scan_ports(const char* path)
                 if (errno != EACCES)
                     perror("open");
             } else {
-                __usb_dump_device(fd, stdout);
+                struct usb_device_descriptor udd;
+                unsigned short __pid = __usb_device(fd, &udd);
+                if (is_android_device(__pid)) {
+                    struct __device_info dev_info = { 0 };
+                    usb_dump_device(fd, stdout);
+                    __get_device_info(fd, &udd, &dev_info);
+                    printf("Vendor ID: %.4X\n", dev_info.vendor_id);
+                    printf("Manufacturer: %s\n", dev_info.manufacturer);
+                    printf("Product: %s\n", dev_info.product);
+                    printf("Serial Number: %s\n", dev_info.serial_number);
+                    // add it to memory
+                }
                 close(fd);
             }
         }
