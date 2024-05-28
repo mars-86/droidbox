@@ -1,4 +1,5 @@
 #include "core.h"
+#include "../../lib/ptp/ptp.h"
 #include "product.h"
 #include <dirent.h>
 #include <errno.h>
@@ -64,12 +65,13 @@ static unsigned short __usb_device(int fd, struct usb_device_descriptor* udd)
 
     int __n_config = __udd.bNumConfigurations;
 
+    ptp_dev_t __ptp = { .fd = fd };
     struct usb_config_descriptor __ucd;
     struct usb_interface_descriptor __uid;
     struct usb_endpoint_descriptor __ued;
     unsigned char __ucd_size = USB_DT_CONFIG_SIZE, __uid_size = USB_DT_INTERFACE_SIZE, __ued_size = USB_DT_ENDPOINT_SIZE;
-    int __is_ptp = 0;
-    for (i = 0; i < __n_config || __is_ptp; ++i) {
+    int __is_ptp = 0, __is_parsed = 0;
+    for (i = 0; i < __n_config || (__is_ptp && __is_parsed); ++i) {
         memset(buff, 0, BUFF_MAX_SIZE);
         if (usb_get_descriptor(fd, USB_DT_CONFIG, i, 0x00, buff, &rlen) != 0) {
             perror("ioctl");
@@ -83,13 +85,24 @@ static unsigned short __usb_device(int fd, struct usb_device_descriptor* udd)
             switch (dt) {
             case USB_DT_INTERFACE:
                 __parse_stream(&__uid, buff + offset, __uid_size);
+                if (__is_ptp)
+                    __is_parsed = 1;
                 if (__uid.bInterfaceClass == 0x06)
                     __is_ptp = 1;
                 break;
             case USB_DT_ENDPOINT:
+                __parse_stream(&__ued, buff + offset, __ued_size);
                 if (__is_ptp) {
-                    __parse_stream(&__ued, buff + offset, __ued_size);
-                    // __ued.bEndpointAddress
+                    if (__ued.bEndpointAddress & USB_DIR_IN && __ued.bmAttributes != 0x03) {
+                        __ptp.endp_in = __ued.bEndpointAddress;
+                        __ptp.endp_in_max_pack_size = __ued.wMaxPacketSize;
+                    } else if (__ued.bEndpointAddress & USB_DIR_OUT && __ued.bmAttributes != 0x03) {
+                        __ptp.endp_out = __ued.bEndpointAddress;
+                        __ptp.endp_out_max_pack_size = __ued.wMaxPacketSize;
+                    } else {
+                        __ptp.endp_int = __ued.bEndpointAddress;
+                        __ptp.endp_int_max_pack_size = __ued.wMaxPacketSize;
+                    }
                 }
                 break;
             case USB_DT_INTERFACE_ASSOCIATION:
@@ -144,6 +157,7 @@ int scan_ports(const char* path)
             } else {
                 struct usb_device_descriptor udd;
                 unsigned short __pid = __usb_device(fd, &udd);
+                puts("HERE");
                 if (is_android_device(__pid)) {
                     struct __device_info dev_info = { 0 };
                     usb_dump_device(fd, stdout);

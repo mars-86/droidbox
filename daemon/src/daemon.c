@@ -1,6 +1,6 @@
 #include "daemon.h"
-#include "../lib/adb/adb.h"
-#include "../lib/usb/usb.h"
+#include "../../lib/adb/adb.h"
+#include "../../lib/usb/usb.h"
 #include <fcntl.h>
 #include <stdio.h>
 
