@@ -1,10 +1,8 @@
-#include "usb.h"
+#include "../usb.h"
 #include <asm/byteorder.h>
 #include <errno.h>
-#include <linux/usb/ch9.h>
 #include <linux/usbdevice_fs.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
